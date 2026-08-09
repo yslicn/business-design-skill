@@ -8,8 +8,8 @@ Chinese and English presentation examples can be added after privacy and distrib
 
 | Language | Presentation | Notes |
 |---|---|---|
-| Chinese | [`automaker-case-cn/report.html`](automaker-case-cn/report.html) | Pseudonymized, presentation-only case based on public-information research |
-| English | [`automaker-case-en/report.html`](automaker-case-en/report.html) | English presentation of the same pseudonymized case |
+| Chinese | [Open the live report](https://yslicn.github.io/business-design-skill/report-cn.html) | Pseudonymized, presentation-only case based on public-information research |
+| English | [Open the live report](https://yslicn.github.io/business-design-skill/report.html) | English presentation of the same pseudonymized case |
 
 ## Generation boundary
 

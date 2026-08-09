@@ -1,6 +1,6 @@
 # Pseudonymized automaker case — English
 
-Open [`report.html`](report.html) in a modern browser.
+[Open the live English report](https://yslicn.github.io/business-design-skill/report.html) in a modern browser.
 
 ## How this example was produced
 

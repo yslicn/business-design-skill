@@ -1,6 +1,6 @@
 # 某汽车公司业务设计案例 — 中文
 
-使用现代浏览器打开 [`report.html`](report.html)。
+使用现代浏览器[直接查看在线中文报告](https://yslicn.github.io/business-design-skill/report-cn.html)。
 
 ## 样例生成方式
 
