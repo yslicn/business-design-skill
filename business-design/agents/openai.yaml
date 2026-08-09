@@ -1,0 +1,7 @@
+interface:
+  display_name: "Business Design"
+  short_description: "Evidence-led multi-agent business design with JSON and Markdown output"
+  brand_color: "#173F5F"
+  default_prompt: "Use $business-design to create an evidence-led business design for my company and strategic objective."
+policy:
+  allow_implicit_invocation: true

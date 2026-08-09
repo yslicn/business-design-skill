@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BusinessDesignProjectState",
+  "description": "Content-first project state. JSON, generated Markdown and its quality report are the core; presentation formats are optional exports.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_name", "run_mode", "run_status", "core_status", "current_step", "stages", "core_artifacts", "optional_exports", "updated_at"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.3"},
+    "project_name": {"type": "string", "minLength": 1},
+    "run_mode": {"type": "string", "enum": ["full", "resume", "research_provided", "design_provided", "core_resume"]},
+    "run_status": {"type": "string", "enum": ["active", "waiting_for_user", "blocked", "completed"]},
+    "core_status": {"type": "string", "enum": ["in_progress", "needs_revision", "waiting_for_user", "completed", "blocked"]},
+    "current_step": {"type": "integer", "minimum": 1, "maximum": 7},
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step_01", "step_02", "step_03", "step_04", "step_05", "step_06", "step_07"],
+      "properties": {
+        "step_01": {"$ref": "#/definitions/stageState"},
+        "step_02": {"$ref": "#/definitions/stageState"},
+        "step_03": {"$ref": "#/definitions/stageState"},
+        "step_04": {"$ref": "#/definitions/stageState"},
+        "step_05": {"$ref": "#/definitions/stageState"},
+        "step_06": {"$ref": "#/definitions/stageState"},
+        "step_07": {"$ref": "#/definitions/stageState"}
+      }
+    },
+    "core_artifacts": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/definitions/artifactCheck"},
+      "required": ["business_design.json", "business_design.md", "content_quality_report.json"]
+    },
+    "optional_exports": {"type": "array", "items": {"$ref": "#/definitions/optionalExport"}},
+    "updated_at": {"type": "string", "minLength": 1}
+  },
+  "definitions": {
+    "stageState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reused", "revision_count", "artifacts", "validation_notes"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pending", "in_progress", "passed", "needs_revision", "waiting_for_user", "blocked"]},
+        "reused": {"type": "boolean"},
+        "revision_count": {"type": "integer", "minimum": 0},
+        "artifacts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "validation_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "artifactCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "enum": ["PASS", "FAIL", "PENDING"]},
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+        "updated_at": {"type": "string", "minLength": 1}
+      }
+    },
+    "optionalExport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "renderer", "status", "artifacts", "issues"],
+      "properties": {
+        "format": {"type": "string", "minLength": 1},
+        "renderer": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "enum": ["not_requested", "pending", "passed", "failed"]},
+        "artifacts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "issues": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

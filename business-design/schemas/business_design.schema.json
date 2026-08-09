@@ -1,0 +1,1011 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BusinessDesign",
+  "description": "04 步 Report consultant 产出的 VDBD 业务设计契约。1.3 强制保存环节选择方法、客户价值等式和利润模式筛选。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "company",
+    "industry",
+    "strategic_intent",
+    "core_pain",
+    "story_line",
+    "assumptions",
+    "chapters",
+    "data_gaps"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.3"
+    },
+    "company": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "industry": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "strategic_intent": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "core_pain": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "story_line": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "impact", "validation_method"],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "description": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "impact": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "validation_method": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      }
+    },
+    "chapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "market_scan",
+        "customer_selection",
+        "value_proposition",
+        "profit_model",
+        "scope_of_activities",
+        "strategic_control",
+        "risk_management"
+      ],
+      "properties": {
+        "market_scan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message", "evidence_ids", "assumption_ids", "five_looks", "policy", "competitor_overview"],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "five_looks": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "look_industry_trend",
+                "look_market_customer",
+                "look_competition",
+                "look_self",
+                "look_opportunity"
+              ],
+              "properties": {
+                "look_industry_trend": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "look_market_customer": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "look_competition": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "look_self": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "look_opportunity": {
+                  "$ref": "#/definitions/nonEmptyString"
+                }
+              }
+            },
+            "policy": {
+              "$ref": "#/definitions/nonEmptyStringArray"
+            },
+            "competitor_overview": {
+              "$ref": "#/definitions/nonEmptyStringArray"
+            }
+          }
+        },
+        "customer_selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key_message",
+            "evidence_ids",
+            "assumption_ids",
+            "current_position_assessment",
+            "selection_method",
+            "segment_evaluation",
+            "recommended_segment",
+            "customer_segmentation",
+            "high_value_targets",
+            "customer_needs_pains"
+          ],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "current_position_assessment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["segment", "conclusion", "evidence_ids", "assumption_ids"],
+              "properties": {
+                "segment": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "conclusion": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/nonEmptyIdArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "selection_method": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "score_scale",
+                "market_attractiveness_weight",
+                "enterprise_fit_weight",
+                "dimension_weights",
+                "formula",
+                "weighting_rationale"
+              ],
+              "properties": {
+                "score_scale": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["minimum", "maximum", "higher_is_better"],
+                  "properties": {
+                    "minimum": {"type": "integer", "const": 1},
+                    "maximum": {"type": "integer", "const": 5},
+                    "higher_is_better": {"type": "boolean", "const": true}
+                  }
+                },
+                "market_attractiveness_weight": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "exclusiveMaximum": 1
+                },
+                "enterprise_fit_weight": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "exclusiveMaximum": 1
+                },
+                "dimension_weights": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "profit_pool_size",
+                    "growth_and_value_migration",
+                    "competitive_attractiveness",
+                    "capability_fit",
+                    "business_synergy",
+                    "feasibility_and_risk"
+                  ],
+                  "properties": {
+                    "profit_pool_size": {"$ref": "#/definitions/weight"},
+                    "growth_and_value_migration": {"$ref": "#/definitions/weight"},
+                    "competitive_attractiveness": {"$ref": "#/definitions/weight"},
+                    "capability_fit": {"$ref": "#/definitions/weight"},
+                    "business_synergy": {"$ref": "#/definitions/weight"},
+                    "feasibility_and_risk": {"$ref": "#/definitions/weight"}
+                  }
+                },
+                "formula": {"$ref": "#/definitions/nonEmptyString"},
+                "weighting_rationale": {"$ref": "#/definitions/nonEmptyString"}
+              }
+            },
+            "segment_evaluation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "segment",
+                  "scores",
+                  "market_attractiveness_contribution",
+                  "enterprise_fit_contribution",
+                  "weighted_score",
+                  "score_rationale",
+                  "overall_assessment",
+                  "evidence_ids",
+                  "assumption_ids"
+                ],
+                "properties": {
+                  "segment": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "scores": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "profit_pool_size",
+                      "growth_and_value_migration",
+                      "competitive_attractiveness",
+                      "capability_fit",
+                      "business_synergy",
+                      "feasibility_and_risk"
+                    ],
+                    "properties": {
+                      "profit_pool_size": {
+                        "$ref": "#/definitions/score"
+                      },
+                      "growth_and_value_migration": {
+                        "$ref": "#/definitions/score"
+                      },
+                      "competitive_attractiveness": {
+                        "$ref": "#/definitions/score"
+                      },
+                      "capability_fit": {
+                        "$ref": "#/definitions/score"
+                      },
+                      "business_synergy": {
+                        "$ref": "#/definitions/score"
+                      },
+                      "feasibility_and_risk": {
+                        "$ref": "#/definitions/score"
+                      }
+                    }
+                  },
+                  "weighted_score": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "market_attractiveness_contribution": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
+                  },
+                  "enterprise_fit_contribution": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
+                  },
+                  "score_rationale": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "overall_assessment": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/nonEmptyIdArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            },
+            "recommended_segment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "decision", "rationale", "evidence_ids", "assumption_ids"],
+              "properties": {
+                "name": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "decision": {
+                  "type": "string",
+                  "enum": ["enter", "expand", "defend", "partner", "explore", "avoid"]
+                },
+                "rationale": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/nonEmptyIdArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "customer_segmentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["segment", "description"],
+                "properties": {
+                  "segment": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "description": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  }
+                }
+              }
+            },
+            "high_value_targets": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["target", "rationale", "evidence_ids", "assumption_ids"],
+                "properties": {
+                  "target": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "rationale": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/nonEmptyIdArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            },
+            "customer_needs_pains": {
+              "$ref": "#/definitions/nonEmptyStringArray"
+            }
+          }
+        },
+        "value_proposition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message", "evidence_ids", "assumption_ids", "competitor_approaches", "differentiated_offering"],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "competitor_approaches": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["competitor", "offering", "recent_moves", "evidence_ids"],
+                "properties": {
+                  "competitor": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "offering": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "recent_moves": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/nonEmptyIdArray"
+                  }
+                }
+              }
+            },
+            "differentiated_offering": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["statement", "rationale", "evidence_ids", "assumption_ids"],
+              "properties": {
+                "statement": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "rationale": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/nonEmptyIdArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            }
+          }
+        },
+        "profit_model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key_message",
+            "evidence_ids",
+            "assumption_ids",
+            "pattern_screening",
+            "customer_value_equations",
+            "candidate_models",
+            "selected_architecture",
+            "value_capture_mechanisms",
+            "unit_economics",
+            "profitability_estimate",
+            "validation_tests"
+          ],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "pattern_screening": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "library_version",
+                "screening_scope",
+                "screening_criteria",
+                "shortlisted_model_ids",
+                "screening_summary"
+              ],
+              "properties": {
+                "library_version": {"$ref": "#/definitions/nonEmptyString"},
+                "screening_scope": {"$ref": "#/definitions/nonEmptyString"},
+                "screening_criteria": {
+                  "type": "array",
+                  "minItems": 4,
+                  "uniqueItems": true,
+                  "items": {"$ref": "#/definitions/nonEmptyString"}
+                },
+                "shortlisted_model_ids": {
+                  "type": "array",
+                  "minItems": 2,
+                  "uniqueItems": true,
+                  "items": {"$ref": "#/definitions/nonEmptyString"}
+                },
+                "screening_summary": {"$ref": "#/definitions/nonEmptyString"}
+              }
+            },
+            "customer_value_equations": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "target_customer",
+                  "incremental_revenue",
+                  "avoided_loss",
+                  "working_capital_improvement",
+                  "risk_reduction",
+                  "adoption_cost",
+                  "net_value_logic",
+                  "value_metric",
+                  "evidence_ids",
+                  "assumption_ids"
+                ],
+                "properties": {
+                  "id": {"$ref": "#/definitions/nonEmptyString"},
+                  "target_customer": {"$ref": "#/definitions/nonEmptyString"},
+                  "incremental_revenue": {"$ref": "#/definitions/nonEmptyString"},
+                  "avoided_loss": {"$ref": "#/definitions/nonEmptyString"},
+                  "working_capital_improvement": {"$ref": "#/definitions/nonEmptyString"},
+                  "risk_reduction": {"$ref": "#/definitions/nonEmptyString"},
+                  "adoption_cost": {"$ref": "#/definitions/nonEmptyString"},
+                  "net_value_logic": {"$ref": "#/definitions/nonEmptyString"},
+                  "value_metric": {"$ref": "#/definitions/nonEmptyString"},
+                  "evidence_ids": {"$ref": "#/definitions/idArray"},
+                  "assumption_ids": {"$ref": "#/definitions/idArray"}
+                }
+              }
+            },
+            "candidate_models": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "pattern_name",
+                  "pattern_origin",
+                  "mechanism",
+                  "fit",
+                  "fit_rationale",
+                  "evidence_ids",
+                  "assumption_ids"
+                ],
+                "properties": {
+                  "id": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "pattern_name": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "pattern_origin": {
+                    "type": "string",
+                    "enum": ["published_profit_patterns", "industry_observed", "custom_designed", "hybrid", "mercer_slywotzky"]
+                  },
+                  "mechanism": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "fit": {
+                    "type": "string",
+                    "enum": ["high", "medium", "low", "rejected"]
+                  },
+                  "fit_rationale": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/idArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            },
+            "selected_architecture": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "primary_model_id",
+                "supporting_model_ids",
+                "architecture_statement",
+                "selection_rationale",
+                "evidence_ids",
+                "assumption_ids"
+              ],
+              "properties": {
+                "primary_model_id": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "supporting_model_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"$ref": "#/definitions/nonEmptyString"}
+                },
+                "architecture_statement": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "selection_rationale": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/idArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "value_capture_mechanisms": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "linked_model_ids",
+                  "linked_value_equation_ids",
+                  "offer",
+                  "target_customer",
+                  "value_created",
+                  "value_metric",
+                  "payer",
+                  "charging_unit",
+                  "price_formula",
+                  "pricing_mechanism",
+                  "contract_and_risk_sharing",
+                  "revenue_timing",
+                  "margin_logic",
+                  "control_point",
+                  "evidence_ids",
+                  "assumption_ids"
+                ],
+                "properties": {
+                  "id": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "linked_model_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {"$ref": "#/definitions/nonEmptyString"}
+                  },
+                  "linked_value_equation_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {"$ref": "#/definitions/nonEmptyString"}
+                  },
+                  "offer": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "target_customer": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "value_created": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "value_metric": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "payer": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "charging_unit": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "price_formula": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "pricing_mechanism": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "contract_and_risk_sharing": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "revenue_timing": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "margin_logic": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "control_point": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/idArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            },
+            "unit_economics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "unit",
+                "revenue_formula",
+                "variable_costs",
+                "contribution_margin_logic",
+                "working_capital_and_cash_conversion",
+                "sensitivity",
+                "evidence_ids",
+                "assumption_ids"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["quantified", "directional", "not_available"]
+                },
+                "unit": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "revenue_formula": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "variable_costs": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "contribution_margin_logic": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "working_capital_and_cash_conversion": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "sensitivity": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/idArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "profitability_estimate": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "summary",
+                "profit_drivers",
+                "break_even_or_payback",
+                "evidence_ids",
+                "assumption_ids"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["quantified", "directional", "not_available"]
+                },
+                "summary": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "profit_drivers": {
+                  "$ref": "#/definitions/nonEmptyStringArray"
+                },
+                "break_even_or_payback": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/idArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "growth_and_funding_plan": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "summary", "evidence_ids", "assumption_ids"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["quantified", "directional", "not_available"]
+                },
+                "summary": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/idArray"
+                },
+                "assumption_ids": {
+                  "$ref": "#/definitions/idArray"
+                }
+              }
+            },
+            "validation_tests": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "hypothesis",
+                  "metric",
+                  "threshold_or_signal",
+                  "validation_method",
+                  "cadence",
+                  "assumption_ids"
+                ],
+                "properties": {
+                  "hypothesis": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "metric": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "threshold_or_signal": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "validation_method": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "cadence": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "scope_of_activities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message", "evidence_ids", "assumption_ids", "in_scope", "out_of_scope"],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "in_scope": {
+              "$ref": "#/definitions/scopeItems"
+            },
+            "out_of_scope": {
+              "$ref": "#/definitions/scopeItems"
+            }
+          }
+        },
+        "strategic_control": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message", "evidence_ids", "assumption_ids", "control_points"],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "control_points": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["point", "action", "evidence_ids", "assumption_ids"],
+                "properties": {
+                  "point": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "action": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/nonEmptyIdArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "risk_management": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_message", "evidence_ids", "assumption_ids", "risks"],
+          "properties": {
+            "key_message": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "evidence_ids": {
+              "$ref": "#/definitions/nonEmptyIdArray"
+            },
+            "assumption_ids": {
+              "$ref": "#/definitions/idArray"
+            },
+            "risks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["dimension", "risk", "mitigation", "evidence_ids", "assumption_ids"],
+                "properties": {
+                  "dimension": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "risk": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "mitigation": {
+                    "$ref": "#/definitions/nonEmptyString"
+                  },
+                  "evidence_ids": {
+                    "$ref": "#/definitions/nonEmptyIdArray"
+                  },
+                  "assumption_ids": {
+                    "$ref": "#/definitions/idArray"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "data_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["chapter", "missing", "impact", "recommended_action"],
+        "properties": {
+          "chapter": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "missing": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "impact": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "recommended_action": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "idArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "nonEmptyIdArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "weight": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1
+    },
+    "scopeItems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["business", "rationale", "evidence_ids", "assumption_ids"],
+        "properties": {
+          "business": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "rationale": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "evidence_ids": {
+            "$ref": "#/definitions/nonEmptyIdArray"
+          },
+          "assumption_ids": {
+            "$ref": "#/definitions/idArray"
+          }
+        }
+      }
+    }
+  }
+}

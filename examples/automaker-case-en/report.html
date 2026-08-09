@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anonymous Automaker · Business Design Report (Case Study)</title>
+<style>
+:root{
+  --brand-100:#002E5C; --brand-90:#0A3B6E; --brand-80:#104A80; --brand-60:#2A6BA8;
+  --brand-40:#5B90BE; --brand-25:#9DBDD6; --brand-12:#D8E4EE; --brand-08:#EAF1F7;
+  --ink:#10141A; --ink-2:#44505C; --ink-3:#7C8794;
+  --paper:#F6F8FA; --line:#DEE5EC; --sun:#FFDE00; --white:#FFFFFF;
+  --mono:"SF Mono","Roboto Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Segoe UI",sans-serif;
+  --r:10px;
+  --shadow:0 8px 24px rgba(16,20,26,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--brand-100);color:#fff}
+
+/* ===== Screens ===== */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease,visibility .5s;will-change:opacity,transform}
+.screen.active{opacity:1;visibility:visible;transform:none;z-index:2}
+@media (prefers-reduced-motion:reduce){.screen{transition:none}}
+
+.s-head{padding:16px 150px 0 56px;flex:0 0 auto}
+.eyebrow{display:flex;align-items:center;gap:18px;margin-bottom:10px}
+.ch-num{font-family:var(--mono);font-weight:600;font-size:15px;letter-spacing:.12em;color:var(--brand-100);border:1.5px solid var(--brand-100);border-radius:5px;padding:3px 8px}
+.ch-name{font-size:14px;font-weight:600;letter-spacing:.28em;color:var(--ink-3);text-transform:uppercase}
+.s-title{font-size:36px;font-weight:800;letter-spacing:.01em;color:var(--ink);line-height:1.18}
+.s-sub{font-size:16px;color:var(--ink-2);margin-top:8px;max-width:960px;line-height:1.7}
+.s-body{padding:12px 56px 72px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+
+.grid{width:100%;max-width:1680px;margin:0 auto;display:grid;gap:18px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-2-1{grid-template-columns:2fr 1fr}
+.grid-1-2{grid-template-columns:1fr 2fr}
+.grid-rows{grid-template-rows:auto auto}
+.g-span-2{grid-column:span 2}
+.g-span-3{grid-column:span 3}
+.r-span-2{grid-row:span 2}
+
+/* ===== Cards ===== */
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:17px 20px;display:flex;flex-direction:column;gap:10px;min-height:0;position:relative}
+.card.tint{background:var(--brand-08);border-color:var(--brand-12)}
+.card.dark{background:var(--brand-100);border-color:var(--brand-100)}
+.card.dark .c-title,.card.dark .c-body{color:#EAF1F7}
+.card.dark .c-kicker{color:#9DBDD6}
+.card.flat{box-shadow:none;background:transparent;border-color:var(--line)}
+.card-title{font-size:17.5px;font-weight:700;color:var(--ink);display:flex;align-items:baseline;gap:18px}
+.card-title .idx{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--brand-100)}
+.card-body{font-size:15px;line-height:1.75;color:var(--ink-2)}
+.card-body strong{color:var(--ink);font-weight:700}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.18em;color:var(--brand-60);text-transform:uppercase}
+
+/* KPI */
+.kpi .num{font-size:42px;font-weight:800;color:var(--brand-100);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .num small{font-size:16px;font-weight:600;color:var(--ink-3);margin-left:4px}
+.kpi .lbl{font-size:14.5px;color:var(--ink-2);margin-top:7px;line-height:1.5}
+
+/* Score bars */
+.bar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;position:relative;height:26px}
+.bar-row .bl{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row .bv{font-family:var(--mono);color:var(--brand-100);font-weight:600}
+.bar-track{position:absolute;left:0;right:64px;bottom:3px;height:4px;background:var(--brand-12);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;display:block;background:linear-gradient(90deg,var(--brand-80),var(--brand-40));border-radius:2px}
+.card.score{gap:8px;padding:15px 18px}
+.card.concl{padding:16px 24px;gap:18px}
+
+.card.concl .card-body{font-size:15px;line-height:1.72}
+/* enrichment components */
+.flow{display:flex;align-items:stretch;gap:9px;margin-top:16px}
+.flow .fnode{flex:1;border-radius:8px;padding:13px 16px;background:var(--brand-08);border:1px solid var(--brand-12);display:flex;flex-direction:column;gap:5px;justify-content:center;min-height:76px}
+.flow .fnode.dk{background:var(--brand-100);border-color:var(--brand-100)}
+.flow .fnode.dk .ft{color:#fff}
+.flow .fnode.dk .fd{color:#9DBDD6}
+.flow .ft{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.flow .fd{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.flow .farr{flex:0 0 auto;display:flex;align-items:center;color:var(--brand-40);font-weight:800;font-size:16px}
+.hbar{display:flex;height:30px;border-radius:6px;overflow:hidden;margin-top:14px;font-size:12px;font-weight:700;color:#fff}
+.hbar div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+.hleg{display:flex;gap:18px;margin-top:8px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.hleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+
+/* tags & badges */
+.tag{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--brand-100);background:var(--brand-08);border:1px solid var(--brand-12);border-radius:4px;padding:1px 6px;margin:0 2px 2px 0;letter-spacing:.02em}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;border-radius:6px;padding:4px 10px;letter-spacing:.04em}
+.badge.enter{background:var(--brand-100);color:#fff}
+.badge.expand{background:var(--brand-100);color:#fff}
+.badge.defend{background:#E8EBEE;color:#44505C;border:1px solid #CBD4DC}
+.badge.partner{background:var(--brand-12);color:var(--brand-100)}
+.badge.avoid{background:#3A3F46;color:#fff}
+.badge.observe{background:var(--brand-08);color:var(--ink-2);border:1px solid var(--brand-12)}
+
+/* callout (core judgment) */
+.callout{border-left:5px solid var(--brand-100);background:var(--brand-08);border-radius:0 var(--r) var(--r) 0;padding:15px 20px;font-size:15.5px;line-height:1.8;color:var(--ink)}
+.callout strong{color:var(--brand-100)}
+.callout .lead{display:block;font-size:13.5px;font-weight:700;letter-spacing:.2em;color:var(--brand-60);margin-bottom:8px;text-transform:uppercase}
+.callout.dark{background:var(--brand-100);border-left-color:var(--sun)}
+.callout.dark,.callout.dark strong{color:#EAF1F7}
+
+/* tables */
+.table-wrap{border:1px solid var(--line);border-radius:var(--r);background:var(--white);overflow:hidden;min-height:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--brand-100);color:#fff;font-weight:600;text-align:left;padding:9px 12px;letter-spacing:.05em;font-size:13.5px;position:sticky;top:0}
+td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.55;color:var(--ink-2)}
+tr:nth-child(even) td{background:#FAFCFE}
+td strong{color:var(--ink)}
+.t-wrap-scroll{overflow:auto;height:100%;min-height:0}
+
+/* lists */
+.lst{display:flex;flex-direction:column;gap:8px}
+.lst .li{display:flex;gap:10px;font-size:15px;line-height:1.7;color:var(--ink-2)}
+.lst .li::before{content:"";flex:0 0 6px;height:6px;border-radius:50%;background:var(--brand-60);margin-top:8px}
+
+/* ===== Fixed chrome ===== */
+.brand{position:fixed;top:18px;right:26px;z-index:50;text-align:right;pointer-events:none}
+.brand .zh{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:.06em}
+.brand .en{font-family:var(--mono);font-size:11px;letter-spacing:.34em;color:var(--ink-3)}
+
+.rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:10px}
+.rail button{width:10px;height:10px;border-radius:50%;border:1px solid var(--brand-25);background:transparent;cursor:pointer;position:relative;transition:all .25s}
+.rail button.on{background:var(--brand-100);border-color:var(--brand-100);transform:scale(1.15)}
+.rail button.on::after{content:"";position:absolute;right:14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-right:5px solid var(--brand-100)}
+
+/* ===== Instrument cluster (signature) ===== */
+.cluster{position:fixed;left:0;right:0;bottom:0;height:52px;background:var(--brand-100);color:#EAF1F7;z-index:60;display:flex;align-items:center;padding:0 26px;gap:0;box-shadow:0 -6px 24px rgba(16,20,26,.18)}
+.cluster .seg{display:flex;align-items:center;gap:10px;height:100%}
+.cluster .seg+.seg{border-left:1px solid rgba(255,255,255,.14);padding-left:26px;margin-left:26px}
+.cluster .pwr{width:8px;height:8px;background:var(--sun);border-radius:50%;box-shadow:0 0 10px rgba(255,222,0,.8)}
+.cluster .lab{font-size:11px;letter-spacing:.26em;color:#9DBDD6;text-transform:uppercase}
+.cluster .val{font-family:var(--mono);font-size:14.5px;font-weight:600;letter-spacing:.05em;color:#fff}
+.cluster .pg{flex:1;display:flex;align-items:center;gap:18px;height:100%}
+.cluster .pgtrack{flex:1;height:3px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden}
+.cluster .pgfill{height:100%;background:var(--sun);width:0%;transition:width .4s ease}
+.cluster .hint{font-size:13px;color:#9DBDD6;letter-spacing:.08em}
+
+/* ===== Cover ===== */
+.cover{justify-content:center;background:radial-gradient(1200px 700px at 78% -10%,#0A3B6E 0%,var(--brand-100) 55%,#001E3C 100%);color:#fff}
+.cover .inner{padding:60px 8vw;display:flex;flex-direction:column;justify-content:center;height:100%}
+.cover .topline{display:flex;align-items:center;gap:18px;margin-bottom:auto}
+.cover .kicker{color:#9DBDD6}
+.cover h1{font-size:clamp(42px,5.5vw,68px);font-weight:800;letter-spacing:.02em;line-height:1.18;margin:26px 0 18px}
+.cover h1 em{font-style:normal;color:var(--sun)}
+.cover .sub{font-size:clamp(15.5px,1.45vw,19px);color:#C7D8E6;line-height:1.9;max-width:780px}
+.cover .rule{width:100%;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.5),rgba(255,255,255,.06));margin:34px 0}
+.cover .meta{display:flex;gap:44px;flex-wrap:wrap}
+.cover .meta .m{font-family:var(--mono);font-size:14.5px;letter-spacing:.14em;color:#9DBDD6}
+.cover .meta .m b{display:block;font-size:17px;color:#fff;letter-spacing:.02em;font-family:var(--sans);margin-top:6px;font-weight:600}
+.cover .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:34px;max-width:900px}
+.cover .ccard{border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:14px 16px;background:rgba(255,255,255,.05)}
+.cover .ccard .k{font-size:13px;letter-spacing:.2em;color:#9DBDD6;margin-bottom:8px}
+.cover .ccard .v{font-size:16px;line-height:1.6;color:#EAF1F7}
+.cover .bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;gap:20px}
+.cover .hint{font-family:var(--mono);font-size:14px;letter-spacing:.2em;color:#9DBDD6}
+
+/* nav hint */
+.navhint{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:40;font-size:13.5px;color:var(--ink-3);background:rgba(255,255,255,.92);border:1px solid var(--line);padding:6px 14px;border-radius:20px;box-shadow:var(--shadow);letter-spacing:.06em;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.navhint.show{opacity:1}
+
+/* responsive */
+@media (max-width:1100px){
+  .s-head{padding:24px 140px 0 28px}
+  .s-title{font-size:31px}
+  .s-body{padding:18px 28px 70px}
+  .grid-3,.grid-4{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-2-1,.grid-1-2{grid-template-columns:1fr}
+  .g-span-2,.g-span-3{grid-column:span 1}
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="zh">Anonymous Automaker</div>
+  <div class="en">ANONYMOUS AUTOMAKER · VDBD 2026</div>
+</div>
+
+<nav class="rail" id="rail" aria-label="章节导航"></nav>
+
+<main id="deck">
+<!-- ============ S1 封面 ============ -->
+
+<!-- ============ S1 Cover ============ -->
+<section class="screen cover" data-ch="00" data-title="Cover">
+  <div class="inner">
+    <div class="topline">
+      <span class="kicker">VALUE-DRIVEN BUSINESS DESIGN</span>
+      <span class="kicker">·</span>
+      <span class="kicker">CASE STUDY · 2026</span>
+    </div>
+    <h1>Capture the Installed Base,<br><em>Rebuild</em> Growth &amp; Brand Momentum</h1>
+    <div class="sub">Anonymous Automaker — a joint venture between a global automotive group and its Chinese partner, focused on a single brand. This report designs the business around a 30-million installed customer base, with "new-energy vehicles as the gateway and the aftermarket service layer as the value-capture layer."</div>
+    <div class="rule"></div>
+    <div class="cards">
+      <div class="ccard"><div class="k">CORE JUDGMENT</div><div class="v">The crisis facing joint ventures is structural — the opportunity is not chasing growth, but capturing the existing base.</div></div>
+      <div class="ccard"><div class="k">PRIMARY TARGET</div><div class="v">Existing customers trading up (Segment A1) — make their first NEV still this brand.</div></div>
+      <div class="ccard"><div class="k">PROFIT ARCHITECTURE</div><div class="v">Complete trade-in solution (customer solution) + service profit pool (installed base).</div></div>
+    </div>
+    <div class="bottom">
+      <div class="meta">
+        <div class="m">AUDIENCE<b>Automaker leadership team</b></div>
+        <div class="m">SCOPE<b>China passenger-vehicle market · single brand</b></div>
+        <div class="m">DATA BASIS<b>2019–2026H1 · Evidence IDs traceable</b></div>
+        <div class="m">METHOD<b>VDBD value-driven business design</b></div>
+      </div>
+      <div class="hint">PRESS → TO START</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S2 Executive Summary · Core Judgment ============ -->
+<section class="screen" data-ch="01" data-title="Core Judgment">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">Executive Summary · Core Judgment</h2>
+    <p class="s-sub">A structural transition under profit-pool migration — the opportunity is not chasing growth, but capturing the existing base.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="callout dark">
+        <span class="lead">Core Judgment</span>
+        The profit pool is migrating from "vehicle manufacturing + conventional powertrains" into "<b>batteries + intelligence + aftermarket services</b>"; the crisis facing joint ventures is <b>structural, not cyclical</b>. The automaker's only defensible starting point is its <b>30-million installed customers and 1,000-dealer network</b>. Therefore: new-energy vehicle manufacturing as the <b>gateway</b>, aftermarket services as the <b>value-capture layer</b>; target existing customers trading up; rebuild the value proposition as a "<b>third identity</b>" of German-quality certainty × NEV satisfaction × trade-in convenience; capture value through a <b>complete trade-in solution + service profit pool</b> — rebuilding growth and brand momentum by capturing the base rather than chasing new demand.
+      </div>
+      <div class="grid grid-4" style="margin-top:18px;height:auto;align-content:start">
+        <div class="card kpi">
+          <div class="num">200.2<span>→</span>102.4<span>k units</span></div>
+          <div class="lbl">Sales (2019 peak → 2025), nearly halved</div>
+          <div><span class="tag">E82</span><span class="tag">E03</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">−31.2<span>%</span></div>
+          <div class="lbl">2026H1 YoY — decline still accelerating</div>
+          <div><span class="tag">E82</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">≈30<span>%</span></div>
+          <div class="lbl">JV market share (down from ~60%), overtaken by local brands</div>
+          <div><span class="tag">E03</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">81.2<span>%</span></div>
+          <div class="lbl">of ICE owners choose an NEV as their trade-up — the base is migrating</div>
+          <div><span class="tag">E59</span></div>
+        </div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">Profit pool migrating</div><div class="fd">industry margin 4.1%→3.4% · volume up, margin thin</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">Manufacturing + conventional powertrain</div><div class="fd">the ICE-era OEM powertrain pool has been taken away (E27)</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">Batteries + intelligence + aftermarket</div><div class="fd">battery pool ¥70–120bn (E21) · NEV service value reshaping (E42)</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S3 Strategic Context ============ -->
+<section class="screen" data-ch="01" data-title="Strategic Context">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">Strategic Context</h2>
+    <p class="s-sub">The client, industry context, mandate and core pain behind this design.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto">
+      <div class="card">
+        <div class="kicker">Company</div>
+        <div class="card-title">Anonymous Automaker</div>
+        <div class="card-body">A joint venture between a global automotive group and its Chinese partner, focused on a <b>single brand</b> (excluding low-end sub-brands).</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Industry</div>
+        <div class="card-title">China passenger-vehicle manufacturing &amp; value chain</div>
+        <div class="card-body">A market where ICE and NEV coexist; the profit pool is migrating from vehicle manufacturing and conventional powertrains toward batteries, intelligence and aftermarket services.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Mandate</div>
+        <div class="card-title">NEV transition and brand repositioning</div>
+        <div class="card-body">Shift the center of gravity from the ICE base to smart electrification, rebuild product and technology roadmaps and reshape brand perception; a <b>directional blueprint</b> — platform sharing, third-party partnerships and organizational restructuring are allowed; no hard quantitative commitments.</div>
+      </div>
+      <div class="card tint">
+        <div class="kicker">Pain</div>
+        <div class="card-title">Falling sales, weakening perception, transition not yet a force</div>
+        <div class="card-body">Sales fell sharply over three years (200.2k units in 2019 → 102.4k in 2025; 2026H1 −31.2% YoY); brand perception has weakened relative to competitors; the ICE base is under pressure while the NEV transition has not yet built new growth or brand momentum.</div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode"><div class="ft">200.2k units</div><div class="fd">2019 sales peak</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">102.4k units</div><div class="fd">2025 · nearly halved</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">−31.2%</div><div class="fd">2026H1 YoY · still accelerating</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">Not chasing growth</div><div class="fd">capture the existing 30-million installed base (E61)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S4 Seven Conclusions (1-4) ============ -->
+<section class="screen" data-ch="01" data-title="Seven Conclusions · I">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">Seven Design Conclusions (I) · 01–04</h2>
+    <p class="s-sub">The first four steps of the VDBD path — market scan, customer selection, value proposition, profit model.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:13px;grid-auto-rows:auto">
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">01</span>
+        <div><div class="card-title">Market Scan</div>
+        <div class="card-body">China's passenger-vehicle market has shifted from an "incremental dividend" to "redistribution of the stock": the profit pool is migrating from vehicle manufacturing + conventional powertrains toward <b>batteries + intelligence + aftermarket services</b>. The JV crisis is structural — the opportunity is not chasing growth but <b>capturing its own installed base</b>.</div></div>
+      </div>
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">02</span>
+        <div><div class="card-title">Customer Selection</div>
+        <div class="card-body">Target the <b>existing-customer trade-up segment</b> — market attractiveness is high (81.2% of trade-ins flow to NEVs, upgrades to 200k+ price bands) and the company's right to win is relatively strongest (30 million installed customers + 1,000 dealers + quality and service reputation) — one of the very few target groups "pushed in front of the company by both policy and product forces."</div></div>
+      </div>
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">03</span>
+        <div><div class="card-title">Value Proposition</div>
+        <div class="card-body">Offer "<b>German-quality certainty × NEV powertrain satisfaction × trade-in convenience</b>" — establishing a <b>third identity</b> between "local NEV brands" and "ICE-era JVs," so that loyal customers' first NEV is still this brand.</div></div>
+      </div>
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">04</span>
+        <div><div class="card-title">Profit Model / Value Capture</div>
+        <div class="card-body">Rebuild from "selling-car margin" to a "<b>complete trade-in solution</b> (customer solution) + <b>service profit pool</b> (installed base)": NEV gross margin as the gateway, ICE aftermarket cash flow as transition resources, and finance/used-car/extended-warranty as the long-term profit layers; software subscription is only a premium differentiator, not a revenue source.</div></div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode dk"><div class="ft">01 Market Scan</div><div class="fd">redistribution of the stock</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">02 Customer</div><div class="fd">capture existing customers</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">03 Value Prop</div><div class="fd">third identity</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">04 Profit Model</div><div class="fd">trade-in solution + service pool</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S5 Seven Conclusions (5-7) ============ -->
+<section class="screen" data-ch="01" data-title="Seven Conclusions · II">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">Seven Design Conclusions (II) · 05–07</h2>
+    <p class="s-sub">The final three steps of the VDBD path — activity scope, strategic control, risk management.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:13px;grid-auto-rows:auto">
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">05</span>
+        <div><div class="card-title">Activity Scope</div>
+        <div class="card-body">Do the <b>complete loop of capturing the installed base</b> — NEV manufacturing (mainly PHEV/EREV) + channel restructuring + the service chain; do not fight the "chasing growth" battles — in-house batteries, full-stack in-house autonomy, sub-¥100k price wars, hard competition above ¥300k, or near-term exports.</div></div>
+      </div>
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">06</span>
+        <div><div class="card-title">Strategic Control</div>
+        <div class="card-body">Protect profit through four non-replicable control points: <b>30-million customer data, the 1,000-dealer channel and service reputation, brand equity, and ICE cash flow</b> — a moat that buys "time to convert installed-base assets into growth-point assets"; autonomy and platform capabilities are locked in through partnerships, not built in-house.</div></div>
+      </div>
+      <div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">07</span>
+        <div><div class="card-title">Risk Management</div>
+        <div class="card-body">The biggest strategic risk is not "transitioning too slowly" but "<b>subsidizing NEVs with ICE profit inertia without reaching the scale to form a positive loop</b>" — both shareholders must commit to a 3–5 year profitability tolerance and hold the 2026–2027 window under three timing pressures.</div></div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="lead">In one sentence</span>
+      Rebuild growth and brand momentum by "capturing the installed base" — not chasing growth, but re-engaging 30 million existing customers: NEVs as the gateway, aftermarket services as the value-capture layer, the ICE base as cash flow and time, four control points to protect profit, and the 2026–2027 window held under three timing pressures.
+    </div>
+  </div>
+</section>
+
+<!-- ============ S6 Scope & Evidence ============ -->
+<section class="screen" data-ch="01" data-title="Scope & Evidence">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Scope &amp; Evidence</span></div>
+    <h2 class="s-title">Research Scope &amp; Evidence Basis</h2>
+    <p class="s-sub">Every viewpoint in this report is traceable to the underlying data structure, keeping conclusions verifiable and reviewable.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="callout">
+        <span class="lead">Evidence Basis</span>
+        All business viewpoints, figures, facts, estimates, assumptions and data gaps in this report come from the current <strong>business_design.json</strong>; every section keeps traceability through <strong>Evidence IDs</strong> and <strong>Assumption IDs</strong>, so any conclusion can be traced back to the original evidence.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px;min-height:0">
+        <div class="card">
+          <div class="kicker">Evidence · Traceability</div>
+          <div class="kpi"><div class="num">76<span>IDs</span></div></div>
+          <div class="card-body" style="font-size:13.5px">E01–E100 numbering across market, customer, competition, capability, window and competitor evidence, cited throughout (e.g., E61 installed base, E82 sales, E90 product plan).</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Assumption · Traceability</div>
+          <div class="kpi"><div class="num">A01<span>–</span>A10</div></div>
+          <div class="card-body" style="font-size:13.5px">Directional assumptions independently numbered; any judgment without public data is explicitly marked as an assumption with a validation plan and data-gap list.</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Data Source</div>
+          <div class="card-body" style="font-size:14px;margin-top:6px">Current <strong>business_design.json</strong>; this HTML is converted from its auto-generated Markdown — the JSON remains the authoritative content.</div>
+          <div><span class="tag">do-not-edit</span></div>
+        </div>
+        <div class="card">
+          <div class="kicker">Fingerprint</div>
+          <div class="card-body" style="font-family:var(--mono);font-size:11px;line-height:1.8;word-break:break-all;margin-top:6px">Source fingerprint retained in the internal test record; omitted from this public presentation.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode"><div class="ft">01 Market Scan</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">02 Customer</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">03 Value Prop</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">04 Profit Model</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">05 Scope</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">06 Control</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">07 Risk</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S7 Key Assumptions & Validation ============ -->
+<section class="screen" data-ch="01" data-title="Key Assumptions">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Assumptions &amp; Validation</span></div>
+    <h2 class="s-title">Key Assumptions &amp; Validation Plan</h2>
+    <p class="s-sub">Ten assumptions determine whether the design holds — each with an impact chain and a validation method.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:10px">
+      <div class="card">
+        <div class="card-title"><span class="idx">A01</span>Existing-customer trust is convertible</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> precondition of the "capture the base" path — if trust is broken, the 30-million base cannot convert.<br><strong>Validation:</strong> NPS segmentation research + 2026–2027 trade-up pilot conversion rates, benchmarked against the 81.2% industry trade-in flow.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A02</span>PHEV/EREV is the primary capture form</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> decides the product route; if BEV becomes mainstream while PHEV supply lags, the window is missed again.<br><strong>Validation:</strong> track PHEV/EREV penetration and JV PHEV sales; verify form preference in trade-up research.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A03</span>New-platform 40% cost-down is achievable</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> the life-or-death line for unit economics — the only systematic cost lever besides batteries.<br><strong>Validation:</strong> BOM teardown of new-platform models vs. the incumbent platform; single-car margin disclosure after the first NEV launch.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A04</span>Autonomy supply arrives "smart-ready"</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> decides whether the 2026–2027 product window holds; autonomy is a core purchase decision (L2+ penetration 67.6%).<br><strong>Validation:</strong> city NOA availability/satisfaction tests; supplier delivery milestone tracking.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A05</span>ICE aftermarket cash flow can fund the transition</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> the resource source for "funding the transition with ICE profits"; cash-flow gap if the base shrinks faster than NEV ramp-up.<br><strong>Validation:</strong> quarterly monitoring of ICE fleet, aftermarket revenue and NEV service revenue share.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A06</span>2026–2027 purchase-tax window can be captured</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> window-period shipments decide the ramp slope; after rollback, product strength — not policy — is tested.<br><strong>Validation:</strong> monthly tracking of window-period sales and post-rollback demand.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A07</span>Installed-base data is reachable and convertible</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> sets the ceiling of the capture business; without precise reach, the base advantage cannot be monetized.<br><strong>Validation:</strong> 30-million customer data-modeling pilot to establish reach/intent/conversion baselines.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A08</span>¥5,000–7,000 per-unit net margin is sustainable</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> bounds the profitability estimate; if price wars drive unit margin to zero, the model must pivot faster to services.<br><strong>Validation:</strong> quarterly per-unit net margin and peer benchmarking; actual margin after new-platform cost-down lands.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A09</span>No export/overseas profit in the near term</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> prevents overseas premiums from entering the profit model; estimates are China-only.<br><strong>Validation:</strong> no overseas revenue assumptions until the JV's export strategy is explicit.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A10</span>Shareholders commit to a 3–5 year profitability tolerance</div>
+        <div class="card-body" style="font-size:12px"><strong>Impact:</strong> sets the resource ceiling and pace; prioritizing near-term profit risks missing the window.<br><strong>Validation:</strong> written governance confirmation of the NEV budget and a 3–5 year breakeven timetable.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S8 Market Scan · Five Views (I) ============ -->
+<section class="screen" data-ch="02" data-title="Five Views · I">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Five Views</span></div>
+    <h2 class="s-title">Market Scan · Five Views (I) — Industry / Market / Competition</h2>
+    <p class="s-sub">Three views on "profit-pool migration" and "redistribution of the stock".</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="card-title"><span class="idx">View 1</span>Industry trends: volume up, margins thin, profit pool migrating</div>
+        <div class="card-body" style="font-size:13.5px">2025 auto production/sales: 34.53M / 34.40M units; passenger cars first topped 30M, but the industry profit margin fell to a historic low of <strong>4.1%</strong>, further to <strong>3.4%</strong> in Jan–May 2026. The battery profit pool is ~¥70–120bn (15–26% of total auto industry profit); OEMs' most valuable conventional-powertrain pool has been taken away; the downstream ICE aftermarket pool is restructuring (NEV per-vehicle service value down 30–34%). NEV retail penetration was ~54.1% in 2025 and reached 62.8% by June 2026; JV-brand NEV penetration is only 11.9% versus 81.8% for local brands — an order-of-magnitude gap.</div>
+        <div><span class="tag">E01</span><span class="tag">E02</span><span class="tag">E21</span><span class="tag">E27</span><span class="tag">E04</span><span class="tag">E07</span><span class="tag">E08</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">View 2</span>Market &amp; customers: trade-ins drive the market, trade-up is migration</div>
+        <div class="card-body" style="font-size:13.5px">Growth now comes from trade-ins and additional purchases, not first purchases: the trade-in share exceeded <strong>60%</strong> in 2025; <strong>81.2%</strong> of ICE owners pick an NEV as their trade-up first choice, and trade-ups come with consumption upgrades (after trade-up, 74.1% buy above ¥200k, with ¥200–300k the mainstream band). Purchase factors rank as safety/range/price; only 13.25% will pay a premium for intelligence — "high attention, low willingness to pay, low trust." The two JVs hold a combined 20M+ ICE fleet, and the automaker itself has built <strong>30M+ installed customers</strong>, now entering the concentrated replacement window.</div>
+        <div><span class="tag">E58</span><span class="tag">E59</span><span class="tag">E60</span><span class="tag">E62</span><span class="tag">E61</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">View 3</span>Competition: local brands overtake, JVs defend</div>
+        <div class="card-body" style="font-size:13.5px">Local-brand share rose from 38.4% (2020) to nearly <strong>70%</strong> (2025), while JVs shrank from ~60% to ~30%; in the ¥100–200k core band, local share is 65.2% and BYD holds 19.2%. Profit paths have clearly diverged — vertical integration (BYD), exports (Chery), premium (Seres), extreme cost-down (Leapmotor); among JVs there are no "growth" players left, only "defenders." City-NOA third-party suppliers are highly concentrated (Momenta 60.2%, Huawei HI 20.6%), and software subscription is hard to monetize in China.</div>
+        <div><span class="tag">E03</span><span class="tag">E53</span><span class="tag">E55</span><span class="tag">E68</span><span class="tag">E70</span><span class="tag">E76</span><span class="tag">E25</span><span class="tag">E98</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S9 Market Scan · Five Views (II) ============ -->
+<section class="screen" data-ch="02" data-title="Five Views · II">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Five Views</span></div>
+    <h2 class="s-title">Market Scan · Five Views (II) — Capability / Window</h2>
+    <p class="s-sub">Own capability — "strong installed-base control points, missing growth control points" — and an opportunity window "bounded by 2026–2027, with the white space in reach."</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="card-title"><span class="idx">View 4</span>Own capability: strong installed-base control points, missing growth control points</div>
+        <div class="card-body" style="font-size:13.5px">Sales fell from a 2019 peak of 200.2k units to 102.4k in 2025, and 2026H1 was <strong>−31.2%</strong> YoY; the three ICE cash-cow models (mainstream sedan &gt;270k, business sedan ~234k, main SUV &gt;203k) remain cash pillars, and the smart-ICE line sold ~122k units, <strong>+220%</strong>, validating "ICE + intelligence." But NEV momentum stalled — the BEV family hit 130.2k units in 2024 (JV #1) before the flagship model halved to 38.7k in 2025; the brand's NEVs are only ~120k units (4.5% of sales); capacity utilization fell to ~<strong>38%</strong>; autonomy/cockpit depend on external suppliers (an external autonomy provider, plus smart-cockpit and chip partners).</div>
+        <div><span class="tag">E82</span><span class="tag">E84</span><span class="tag">E85</span><span class="tag">E86</span><span class="tag">E88</span><span class="tag">E90</span></div>
+      </div>
+      <div class="card g-span-2">
+        <div class="card-title"><span class="idx">View 5</span>Opportunity window: 2026–2027 as the boundary, the white space in reach</div>
+        <div class="card-body" style="font-size:13.5px">The window is narrowing: the new platform targets a 40% cost-down with two compact BEVs in 2026; a full-scenario high-level autonomy supplier goes live in Q3 2026 and the new electronic-EEA architecture from 2026; seven NEV launches are planned. The purchase-tax rollback expires at the end of 2027, while trade-in subsidies keep boosting replacement. The true unmet white space: <strong>a ¥100–250k NEV with JV reliability + service network + smart-ready capability</strong>, plus the capture of loyal existing customers' upgrades (in PHEV/EREV form) — a position that sits precisely within the automaker's installed-base control-point range.</div>
+        <div><span class="tag">E90</span><span class="tag">E47</span><span class="tag">E49</span><span class="tag">E55</span><span class="tag">E61</span><span class="tag">E64</span></div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode"><div class="ft">View 4 · Capability</div><div class="fd">strong installed-base control points (30M customers / 1,000 dealers / reputation) · missing growth control points (NEV 4.5%)</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">View 5 · Window</div><div class="fd">the ¥100–250k "JV reliability + service + smart-ready" gap sits within installed-base reach</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S10 Policy Windows ============ -->
+<section class="screen" data-ch="02" data-title="Policy Windows">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Policy</span></div>
+    <h2 class="s-title">Market Scan · Policy Windows</h2>
+    <p class="s-sub">Six policy variables stack into a determinate 2026–2027 window — and into timing pressure after the rollback.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-3" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">Policy 1 · E47</div>
+        <div class="card-title">Purchase-tax rollback</div>
+        <div class="card-body" style="font-size:13.5px">2024–2025 exempt (≤¥30k/vehicle), 2026–2027 halved (≤¥15k), <strong>expires end-2027</strong>; total 2024–2027 relief ≈ ¥520bn. 2026–2027 is the last determinate policy window.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Policy 2 · E48</div>
+        <div class="card-title">Dual-credit hard constraints</div>
+        <div class="card-body" style="font-size:13.5px">NEV credit ratio rises to <strong>48%</strong> in 2026 and <strong>58%</strong> in 2027; of 87 onshore automakers, 19 were negative in 2025 — 17 of them JVs/importers; PHEV credits fall to 0.5, steadily eroding the P&amp;L with compliance costs.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Policy 3 · E49</div>
+        <div class="card-title">Trade-in subsidies</div>
+        <div class="card-body" style="font-size:13.5px">2025: over 11.5M trade-ins, lifting new-car sales &gt;¥1.6tn; 2026 rules: scrappage→NEV 12% up to ¥20k, trade-in→NEV 8% up to ¥15k — policy aligns with the replacement wave, effectively moving ICE-base customers for automakers.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Policy 4 · E50</div>
+        <div class="card-title">L3 admission</div>
+        <div class="card-body" style="font-size:13.5px">MIIT issued the first L3 permits in December 2025 with two models piloted in Beijing/Chongqing — the commercialization pace decides how fast high-level autonomy value is realized.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Policy 5 · E51</div>
+        <div class="card-title">China VII emissions</div>
+        <div class="card-body" style="font-size:13.5px">Expected to be finalized 2026–2027, piloted 2028, national from 2029–2030; sharply raises ICE engine and aftertreatment costs — a <strong>second squeeze</strong> on ICE-base profit that accelerates weaker-player exit.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Policy 6 · E52</div>
+        <div class="card-title">NEV going rural</div>
+        <div class="card-body" style="font-size:13.5px">Cumulative ~15M units sold over five years, underwriting the low-tier market and matching the downward shift of NEV customers.</div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode"><div class="ft">2026</div><div class="fd">purchase-tax halved · dual credits 48% · trade-in boosted · L3 pilot</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">End-2027</div><div class="fd">tax relief expires · dual credits 58% · China VII finalized</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">Window verdict</div><div class="fd">2026–2027 is the last determinate policy window</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S11 Competitive Landscape A ============ -->
+<section class="screen" data-ch="02" data-title="Competition A">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Competition</span></div>
+    <h2 class="s-title">Competitive Landscape (I) · Leading Players</h2>
+    <p class="s-sub">Four profit-path benchmarks among local brands — scale, exports, premium, extreme cost-down.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">BYD</div>
+          <span class="badge enter">Vertical integration · Scale</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">2025 sales <strong>4.60M units</strong>, net profit ¥32.6bn (−19.0%), NEV share 27.9%, 1.05M overseas; battery cost ~<strong>20%</strong> lower, autonomy hardware pressed to the ¥3,000 level, dominating the ¥100–200k band (19.2%). Profit path: "<strong>vertical integration captures manufacturing cost advantage</strong>".</div>
+        <div><span class="tag">E68</span><span class="tag">E33</span><span class="tag">E14</span><span class="tag">E55</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Geely</div>
+          <span class="badge enter">Multi-brand · Volume</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Sales 3.03M units (listed entities), NEVs <strong>1.68M (+90%)</strong>, Galaxy 1.24M (+150%), net profit ¥14.4bn (+36%) — a multi-brand matrix with PHEV volume.</div>
+        <div><span class="tag">E69</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Chery</div>
+          <span class="badge enter">Exports · High margin</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Exports <strong>1.29M units</strong>, overseas revenue share <strong>52.4%</strong>, net margin 6.5%, NEVs 827k (+72.5%) — the export benchmark; its path is not replicable by a JV's Chinese side.</div>
+        <div><span class="tag">E70</span><span class="tag">E16</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Leapmotor</div>
+          <span class="badge defend">Extreme cost-down · Thin margin</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">2025 deliveries <strong>597k units</strong>, first full-year net profit of ¥540M, per-unit net margin ≈<strong>¥900</strong>, ~70% of channels are dealers — "extreme cost-down eats scale"; shares the ¥100–200k band but does not collide with the JV's trade-in path.</div>
+        <div><span class="tag">E76</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Seres / AITO</div>
+          <span class="badge enter">Premium intelligence</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">AITO deliveries <strong>426k units</strong>, average transaction price up to <strong>¥391k</strong>, premium NEV SUV share &gt;20% — directly eroding traditional luxury and JV high-end; the boundary for the automaker's "no hard competition above ¥300k."</div>
+        <div><span class="tag">E78</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S12 Competitive Landscape B ============ -->
+<section class="screen" data-ch="02" data-title="Competition B">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Competition</span></div>
+    <h2 class="s-title">Competitive Landscape (II) · New Forces &amp; JV References</h2>
+    <p class="s-sub">New-force profitability inflection, JV divergence samples, and the group's own position in China.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Li Auto</div>
+          <span class="badge defend">Family EREV · Segment benchmark</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">2025 revenue ¥112.3bn (<strong>−22.3%</strong>), first operating loss of ¥521M; EREV competition intensifying, but the "family EREV" mindshare remains strong.</div>
+        <div><span class="tag">E73</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">NIO / XPeng / Xiaomi</div>
+          <span class="badge observe">New forces · Inflection</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">NIO lost ¥14.9bn for the year but was profitable in Q4; XPeng delivered 429k units and was profitable in Q4; Xiaomi delivered 410k+ in its first year — a common pattern: <strong>profit inflection arrives after scale</strong>, yet per-unit net margin remains far below top local players.</div>
+        <div><span class="tag">E74</span><span class="tag">E75</span><span class="tag">E77</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">Another JV (the reference)</div>
+          <span class="badge defend">JV #1 · Direct reference</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">2025: <strong>1.59M units</strong>, still JV #1 (main brand 902k / premium brand 567k / low-end 118k), sustained by a premium brand, a low-end brand and the ICE base; the gap with the automaker has widened to <strong>55%+</strong>.</div>
+        <div><span class="tag">E80</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">GAC / another JV</div>
+          <span class="badge observe">JV divergence sample</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">GAC swung to a 2025 net loss of <strong>¥8.8bn</strong>; a peer JV delivered 535k units (+23.0% off a low base), ~89k NEVs (#1 among JVs) and <strong>5 consecutive profitable quarters</strong>, running a transparent-pricing channel and a premium NEV sub-brand.</div>
+        <div><span class="tag">E79</span><span class="tag">E81</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">The Group (China)</div>
+          <span class="badge avoid">Weakest EV market</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">2025 China deliveries ≈<strong>2.69M</strong> (−8%), NEVs ~120k (only <strong>4.5%</strong>), back to 2021 levels; China JV equity income fell &gt;60% in three years (€2.62bn → €958M); global operating profit €8.9bn (−53%), ROS 2.8% — China is the group's <strong>"weakest market"</strong> for electrification.</div>
+        <div><span class="tag">E86</span><span class="tag">E87</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S13 Current Position Assessment ============ -->
+<section class="screen" data-ch="03" data-title="Position Assessment">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection</span></div>
+    <h2 class="s-title">Customer Selection · Current Position Assessment</h2>
+    <p class="s-sub">The automaker is deeply tied to a segment where profit is leaking — it must migrate toward NEV manufacturing and aftermarket services in parallel.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div style="display:flex;gap:18px">
+        <div class="card" style="flex:1.2">
+          <div class="kicker">Current segment</div>
+          <div class="card-title">Mid-stream · vehicle manufacturing (ICE-led)</div>
+          <div class="card-body" style="font-size:13.5px">Largest revenue but <b>lowest-margin</b> segment — industry net margin 4.1%, squeezed by both price wars and cost structure. JV share fell from ~60% to ~30%, and 2026H1 sales were −31.2%. Continuing to farm this old pool means farming a <b>shrinking pool</b>.</div>
+        </div>
+        <div class="card tint" style="flex:1">
+          <div class="kicker">Migration · dual move</div>
+          <div class="card-title">NEV manufacturing (capture gateway) + aftermarket services (value-capture layer)</div>
+          <div class="card-body" style="font-size:13.5px">Use NEV manufacturing as the gateway to capture the 30-million base, and the aftermarket service layer to monetize long-term profit — the two fulcrums of the "capture the base" system.</div>
+        </div>
+      </div>
+      <div class="callout dark" style="align-self:stretch">
+        <span class="lead">Assessment</span>
+        The automaker is deeply tied to a "profit-leaking" segment: ICE vehicle manufacturing generates huge revenue (three models remain cash pillars), but per-unit net margin is squeezed to the "scale survival line" (industry ¥5,000–7,000; some JV models with gross margin below 8%), and the conventional powertrain profit pool has already been taken by batteries and intelligence. <b>It must migrate toward NEV manufacturing and aftermarket services simultaneously.</b>
+        <div style="margin-top:10px"><span class="tag">E84</span><span class="tag">E32</span><span class="tag">E100</span><span class="tag">E27</span><span class="tag">E03</span><span class="tag">E82</span></div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode dk"><div class="ft">Now · old pool</div><div class="fd">ICE vehicle manufacturing · lowest margin (net margin 4.1%)</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">Gateway · NEV manufacturing</div><div class="fd">the entry point to capture the 30-million base (PHEV/EREV-led)</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">Capture layer · aftermarket</div><div class="fd">service ¥1.0–1.2tn + used cars ¥1.29tn</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S14 Segment Scoring Overview ============ -->
+<section class="screen" data-ch="03" data-title="Segment Scoring">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Scoring</span></div>
+    <h2 class="s-title">Segment Assessment · Six-Dimension Scoring</h2>
+    <p class="s-sub">Six candidate segments weighted at "market attractiveness 55% × enterprise fit 45%" (1–5 scale).</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-3" style="grid-auto-rows:auto;gap:18px">
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">① NEV manufacturing</div>
+          <span class="badge enter">Enter-expand</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.35</span><span style="font-size:12px;color:var(--ink-3)">weighted · gateway</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.70 · EF 1.65</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">② ICE manufacturing</div>
+          <span class="badge defend">Defend</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.90</span><span style="font-size:12px;color:var(--ink-3)">weighted · current base</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.10 · EF 1.80</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">③ Distribution &amp; retail</div>
+          <span class="badge expand">Expand</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.50</span><span style="font-size:12px;color:var(--ink-3)">weighted · touchpoint</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.65 · EF 1.85</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">④ Aftermarket services</div>
+          <span class="badge expand">Expand</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.50</span><span style="font-size:12px;color:var(--ink-3)">weighted · value capture</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.85 · EF 1.65</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">⑤ Batteries</div>
+          <span class="badge avoid">Avoid in-house</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.55</span><span style="font-size:12px;color:var(--ink-3)">weighted · lowest</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.95 · EF 0.60</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:14px">⑥ Intelligence</div>
+          <span class="badge partner">Partner</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.75</span><span style="font-size:12px;color:var(--ink-3)">weighted · partner, not build</span></div>
+        <div class="bar-row"><span class="bl">Profit pool size</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Growth &amp; migration</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">Competitive attraction</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Capability fit</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">Business synergy</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">Feasibility &amp; risk</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.70 · EF 1.05</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S15 Segment Detail A ============ -->
+<section class="screen" data-ch="03" data-title="Segment Detail A">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Detail</span></div>
+    <h2 class="s-title">Segment Assessment Detail (I) · Segments 1–3</h2>
+    <p class="s-sub">Why NEV manufacturing is the gateway, ICE is defense, and distribution must expand.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:11px;grid-auto-rows:auto">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">① Mid-stream · NEV manufacturing (PHEV/EREV-led + BEV supplement, ¥150–250k)</div>
+          <span class="badge enter">Enter-expand · Gateway</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> vehicle segment revenue ¥11.18tn but net margin only 4.1%, per-unit ceiling ¥5,000–7,000 — large volume, thin margin (3); NEV penetration 54%→62.8% with triple policy tailwinds, value keeps flowing in (4); local brands hold 65.2% of the ¥100–200k band and the JV starts near zero (2); platforms and manufacturing exist but batteries/autonomy are external, and the 40% cost-down is unproven (3); 30M installed customers + 1,000 dealers + ICE cash flow are highly synergistic — products are the only vehicle for capture (5); concentrated external delivery but timing risk (3).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> enter-expand. Not the highest score (3.35 &lt; 3.50), but the <b>gateway</b> of the whole "capture the base" value chain — winning here unlocks the downstream service profit pool, so it is the recommended primary segment.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">② Mid-stream · ICE manufacturing (current base)</div>
+          <span class="badge defend">Defend</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> the three ICE models remain cash pillars (3); ICE output fell &gt;9% cumulatively over three years with purchase-tax rollback and China VII double-squeezing, and the powertrain pool has migrated out (1); JV share shrank to 30% (2); this is the automaker's strongest segment — brand/manufacturing/channel full-stack (5); ICE cash flow is the resource source for "funding the transition" (4); long-term contraction is irreversible, and the longer it is delayed the fewer resources remain (2).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> defend — not a growth engine, but the transition-period cash flow and customer-relationship base; use the "ICE + intelligence" line to slow attrition, positioning ICE as "cash flow and time" rather than a long-term business.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">③ Downstream · distribution &amp; retail (channel restructuring)</div>
+          <span class="badge expand">Expand</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> channel profit has shifted from new-car margin to aftermarket (80.8%) and finance/insurance (36.2%) (3); the wholesale-price-differential model is structurally exhausted — 81.9% price inversion, −25.5% new-car margin — while the "order-based + low inventory + service income" NEV channel is profitable (3); the national 4S network is contracting but the NEV agency model is proven (3); a 1,000-dealer channel exists yet the NEV storefront network shrank from 154 to 58, exposing touchpoint weakness (4); the channel is the first touchpoint for trade-in capture and highly synergistic with the 30-million base (5); dealer satisfaction hit a low of 60.8 and restructuring needs investment and interest redistribution (3).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> expand — restructure toward an "OEM-controlled pricing, dealer-as-service" hybrid: transparent pricing protects new-car margin, dealer profit shifts from wholesale margin to service commissions; restore NEV outlet density in the ¥150–250k band.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S16 Segment Detail B ============ -->
+<section class="screen" data-ch="03" data-title="Segment Detail B">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Detail</span></div>
+    <h2 class="s-title">Segment Assessment Detail (II) · Segments 4–6</h2>
+    <p class="s-sub">Aftermarket is the value-capture layer; batteries are avoided, intelligence is partnered.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:11px;grid-auto-rows:auto">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">④ Downstream · aftermarket services (service + used cars + finance/insurance)</div>
+          <span class="badge expand">Expand · Value-capture layer</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> multiple trillion-level downstream pools stack — service ¥1.0–1.2tn, used cars ~¥1.29tn, auto finance ~¥3tn, NEV insurance premiums ¥190bn (4); high-margin ICE service items disappear with electrification, but battery inspection/used-car appraisal/extended warranty grow — total stable, structure reshuffling (3); NEV service/used-car competition is relatively fragmented and the traditional 4S aftermarket remains the dealer profit pillar (3); a service network and 30M installed customers exist, but battery inspection and used-car appraisal need building or partnering (3); highly synergistic with the ICE base and the trade-in chain (5); new capabilities take time and used-car/finance risk must be managed (3).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> expand — build "service + finance + used car + extended warranty" into a transition-period cash flow and long-term profit pool; it depends on first winning the NEV segment to close the customer loop, so it is a synergy layer of the primary segment rather than a standalone entry.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">⑤ Upstream · batteries</div>
+          <span class="badge avoid">Avoid in-house entry</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> battery pool ¥70–120bn, 15–26% of industry profit, leader net margin ~17% (5); installations +40.4% but prices fell 40% cumulatively with profit re-concentrating to leaders (4); CR2 ~65% highly concentrated, CATL/BYD-dominant (1); the automaker has no battery capacity/technology and vertical integration is impossible (1); supplier-only relationship, no synergy (2); huge investment, entry too late, clashing with the JV structure and profit-first constraints (1).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> avoid — the highest market attractiveness (1.95) but the lowest enterprise fit (0.60); the textbook case of "highest margin ≠ most worth entering"; manage cost through long-term supplier lock-in and second-source strategy, no in-house build.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">⑥ Upstream · intelligence (autonomy domain control + smart cockpit)</div>
+          <span class="badge partner">Partner, not build</span>
+        </div>
+        <div class="card-body" style="font-size:12.5px"><strong>Rationale:</strong> autonomy domain control only ¥47.9bn, smart cockpit ¥156.4bn — still small (2); domain control CAGR 109.9%, autonomy a core purchase factor (L2+ penetration 67.6%) (5); city-NOA suppliers concentrated (Momenta 60.2%/Huawei 20.6%) and BYD pressed hardware to ¥3,000 (2); the automaker relies on external supply with no in-house stack (2); autonomy is key to product competitiveness but can only be accessed via partnership (3); in-house entry is unrealistic, external supply from Q3 2026 is the only practical path (2).</div>
+        <div class="card-body" style="font-size:12.5px;background:var(--brand-08);border-radius:6px;padding:9px 11px"><strong>Verdict:</strong> partner — achieve "smart-ready" through external suppliers (autonomy provider + smart-cockpit and chip partners), making autonomy a standard feature rather than a paid item (software subscription is not dependable in China); no full-stack in-house build.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S17 Recommended Segment ============ -->
+<section class="screen" data-ch="03" data-title="Recommended Segment">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Decision</span></div>
+    <h2 class="s-title">Recommended Segment · The System Combination</h2>
+    <p class="s-sub">"NEV manufacturing as the gateway, aftermarket services as the value-capture layer."</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto">
+      <div class="callout dark">
+        <span class="lead">Recommendation · enter / expand</span>
+        Primary segment: <b>NEV manufacturing</b> (expand, 3.35), with <b>aftermarket services</b> and <b>distribution &amp; retail</b> (both 3.50) as the synergistic capture layers. <b>Conclusion: NEV manufacturing (PHEV/EREV-led) as the strategic gateway, channel and services as capture layers, the ICE base as defense, and in-house batteries/autonomy as avoid/partner.</b>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:18px;min-height:0">
+        <div class="card">
+          <div class="kicker">Reason 1 · Gateway logic</div>
+          <div class="card-body" style="font-size:13.5px">The two highest-scoring downstream segments (aftermarket/distribution) essentially depend on "whether customers buy the automaker's NEVs" — only by first winning NEV manufacturing (the carrier for capturing 30M customers) can the downstream service profit pool be captured; it is the <b>gateway</b> of the whole system.</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Reason 2 · Strongest right to win</div>
+          <div class="card-body" style="font-size:13.5px">Market attractiveness is middling (1.70) but enterprise fit is the company's strongest (1.65, business synergy full marks) — 30M installed customers, a 1,000-dealer channel and quality/service reputation are <b>unreplicable starting assets</b>.</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Reason 3 · Counter-example</div>
+          <div class="card-body" style="font-size:13.5px">The selection deliberately avoids the "highest-margin" battery segment (attractiveness 1.95 but fit 0.60, 2.55 — the lowest total) — exactly the VDBD judgment that "<b>highest margin ≠ most worth entering</b>."</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;font-size:13px;color:var(--ink-2);flex-wrap:wrap">
+        <span class="badge enter">Gateway · NEV manufacturing (C01)</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge expand">Channel touchpoint (C01/C03)</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge expand">Service monetization (C02)</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge partner">Brand amplifier (C04)</span>
+        <span style="color:var(--ink-3);margin-left:8px">＋ C05 profit multiplier (layering)</span>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">NEV mfg 3.35</div><div class="fd">gateway · enter-expand</div></div>
+        <div class="fnode"><div class="ft">Retail 3.50</div><div class="fd">touchpoint · expand</div></div>
+        <div class="fnode"><div class="ft">Aftermarket 3.50</div><div class="fd">capture · expand</div></div>
+        <div class="fnode"><div class="ft">ICE 2.90</div><div class="fd">defend</div></div>
+        <div class="fnode"><div class="ft">Intelligence 2.75</div><div class="fd">partner</div></div>
+        <div class="fnode"><div class="ft">Batteries 2.55</div><div class="fd">avoid</div></div>
+      </div>
+    </div>
+</section>
+<!-- ============ S18 Customer Segmentation ============ -->
+<section class="screen" data-ch="03" data-title="Segmentation">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Segmentation</span></div>
+    <h2 class="s-title">Customer Segmentation</h2>
+    <p class="s-sub">A full picture of six segments — from the primary existing-base target to the deliberately ceded low-tier market.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-template-rows:auto 1fr">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <span class="badge enter">Primary</span>
+        <span class="badge expand">Secondary</span>
+        <span class="badge observe">Watch</span>
+        <span class="badge avoid">Do not attack</span>
+        <span style="font-size:12.5px;color:var(--ink-3);align-self:center">attack-priority tags</span>
+      </div>
+      <div class="table-wrap t-wrap-scroll">
+        <table>
+          <tr><th style="width:26%">Segment</th><th>Profile</th></tr>
+          <tr><td><strong>A1 · Existing owner · trade-up</strong></td><td>Within the 30-million installed base, owners entering the replacement window whose first choice is an NEV (81.2%); trade-ups come with consumption upgrades (74.1% buy above ¥200k, ¥200–300k the mainstream band); trust in the brand's quality/service record (IQS top-3, JV CACSI champion), "observing" intelligence rather than being "geeks."</td></tr>
+          <tr><td><strong>A2 · Existing owner · family add-on</strong></td><td>Existing owners adding a second (NEV) car for the family; shares data and reach channels with A1, decisions driven by family use cases (range, space) and convenience; smaller than A1 but cheaper to convert.</td></tr>
+          <tr><td><strong>B1 · Mainstream family · first purchase</strong></td><td>25–45 year-old first-time family buyers, budget ¥110–200k (45.35% of the market), overlapping the NEV battleground ¥150–200k; 82.04% believe local NEVs are good enough, weak awareness of JV NEV brands — a locally dominated contest for the stock.</td></tr>
+          <tr><td><strong>B2 · Low-tier market · first purchase</strong></td><td>County/city buyers benefiting from the NEV-going-rural program (~15M units cumulative), valuing value-for-money and service-network reach; the brand's NEV storefronts are retreating from low-tier markets.</td></tr>
+          <tr><td><strong>C1 · Business / government</strong></td><td>Business-class cars (business-sedan level) and government procurement; the business sedan remains the #1 B-segment ICE; sensitive to brand image, reliability and service, under pressure from BYD Han and AITO.</td></tr>
+          <tr><td><strong>D1 · Other-brand trade-ins</strong></td><td>ICE owners of Toyota/Honda/local brands attracted to this brand when trading up (the consideration set now includes Chinese brands at ~70%, signaling intense cross-brand competition); historical affinity or service-network trust, but loyalty weaker than A1 — an incremental source.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode dk"><div class="ft">Primary · A1 trade-up</div><div class="fd">＋ C1 business (small but high-margin)</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">Secondary · D1 other-brand trade-in</div><div class="fd">＋ A2 family add-on</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">Watch · B1 family first purchase</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">Do not attack · B2 low-tier</div><div class="fd">cede the sub-¥100k price war</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S19 High-Value Target Customers ============ -->
+<section class="screen" data-ch="03" data-title="High-Value Targets">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Target</span></div>
+    <h2 class="s-title">High-Value Target Customers</h2>
+    <p class="s-sub">An attack matrix ranked by financial health × demand growth × enterprise right to win.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto auto auto">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">A1 · Existing-owner trade-up</div>
+          <span class="badge enter">Primary</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Strong financial health and demand growth: trade-up spending power is assured (74.1% above ¥200k), trade-ins are the market base, and demand direction is clear (81.2% choose NEV first); enterprise fit is the strongest — the only player simultaneously holding customer data (30M installed), channel (1,000 dealers), brand trust (quality/service record) and ICE cash flow.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">D1 · Other-brand trade-in</div>
+          <span class="badge expand">Secondary</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">High demand growth (trade-in-led), good financial health, but weaker affinity and trust than A1; win them with the "JV quality + service network" differentiation — an incremental complement to the primary.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">C1 · Business / government</div>
+          <span class="badge enter">Primary · small</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Holds the B-segment ICE #1 position; procurement is sensitive to reliability and image; an NEV business car (PHEV/EREV business-sedan level) can capture the upgrade — strong financial health.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">B1 · Mainstream family</div>
+          <span class="badge observe">Secondary / watch</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">High demand growth but purchase preference leans local (82.04% think domestic is enough; local share 65.2% in ¥100–200k); enterprise fit is weak here — watch and use as a brand-youth touchpoint, not primary.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">B2 · Low-tier market</div>
+          <span class="badge avoid">Do not attack</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Low-tier first purchases hinge on extreme value and channel density, where local cost advantages are unassailable and this brand's low-tier touchpoints are retreating; cede deliberately, avoiding a sub-¥100k price war.</div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode dk"><div class="ft">A1 trade-up · Primary</div><div class="fd">strongest right to win</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">C1 business · Primary</div><div class="fd">small segment</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">D1 other-brand · Secondary</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">B1 first purchase · Watch</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">B2 low-tier · Cede</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S20 Customer Needs & Pain Points ============ -->
+<section class="screen" data-ch="03" data-title="Needs & Pains">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Needs</span></div>
+    <h2 class="s-title">Customer Needs &amp; Pain Points</h2>
+    <p class="s-sub">The purchase-decision concerns of primary segments — the questions the value proposition must answer.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto auto auto">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">① A1 (primary)</div>
+          <span class="badge enter">Primary</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>Needs:</strong> a "smart-ready + German-reliable + no-premium" NEV to carry the trade-up. <strong>Pains:</strong> doubts about BEV range and autonomy trust (only 31% frequent use, over a quarter distrust), fear the brand is falling behind in intelligence (its cluster is perceived as locally dominated), cumbersome trade-in process and resale-value worries (three-year retention 52.39%, now overtaken by local brands).</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:14.5px">② C1 (primary)</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Needs:</strong> a business-image, reliable NEV business car. <strong>Pains:</strong> insufficient intelligence in the current business sedan; budgets diverted by BYD Han / AITO competitors.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:14.5px">③ A2 (secondary)</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Needs:</strong> a family-scenario-friendly second NEV. <strong>Pains:</strong> convenience of trade-in/finance programs and service-outlet reachability.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:14.5px">④ D1 (secondary)</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Needs:</strong> the certainty of "JV quality + service network." <strong>Pains:</strong> dual distrust — FOMO on local smart-tech labels and doubts about JV intelligence lag.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:14.5px">⑤ B1/B2 (watch/cede)</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Needs:</strong> extreme value and intelligence parity. <strong>Pains:</strong> the automaker lacks product and cost competitiveness here — ceded deliberately.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="lead">The value proposition's answer</span>
+      To the primary segments' core concerns, the value proposition answers with "German-quality certainty × NEV powertrain satisfaction × trade-in convenience" — certainty answers trust deficits, satisfaction answers brand-falling-behind anxiety, convenience answers the cumbersome trade-in process and resale-value worries.
+    </div>
+  </div>
+</section>
+
+<!-- ============ S21 Competitor Offers ============ -->
+<section class="screen" data-ch="04" data-title="Competitor Offers">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">04</span><span class="ch-name">Value Proposition</span></div>
+    <h2 class="s-title">Value Proposition · Competitor Offers</h2>
+    <p class="s-sub">Competitors have built scale/cost advantages on "cheaper" and "smarter" — two fronts that cannot be won head-on.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-template-rows:auto 1fr">
+      <div class="table-wrap t-wrap-scroll">
+        <table>
+          <tr><th style="width:16%">Competitor</th><th style="width:44%">Offer</th><th>Recent moves</th></tr>
+          <tr><td><strong>BYD</strong></td><td>Full coverage of the ¥100–200k band (Qin/Song/Han) + intelligence parity (God's Eye pressing city NOA hardware to ¥3,000), value + three-electric vertical integration.</td><td>"Scale + vertical integration" cutting battery cost ~20% below the industry and moving autonomy from 300k+ down to 150k-level standard; dominates the ¥100–200k band (19.2%).</td></tr>
+          <tr><td><strong>Leapmotor</strong></td><td>Extreme value NEVs in ¥100–200k, dealer-led channels (~70%), first annual profit in 2025.</td><td>"Extreme cost-down eats scale" — ~¥900 per-unit net margin; directly targets this automaker's core price band.</td></tr>
+          <tr><td><strong>Seres / AITO</strong></td><td>Premium smart NEVs (AITO M8/M9), ¥391k average transaction price, Huawei autonomy-enabled.</td><td>"Premium intelligence" eroding traditional luxury and JV high-end; pushes above ¥300k (a band this automaker will not fight hard in).</td></tr>
+          <tr><td><strong>Li Auto</strong></td><td>Family EREV SUVs, branded on "family scenarios + no range anxiety."</td><td>2025 revenue −22.3%, first operating loss; EREV competition intensifying but the "family EREV" mindshare stays strong.</td></tr>
+          <tr><td><strong>Geely / Chery &amp; local brands</strong></td><td>Multi-brand + PHEV volume (Geely Galaxy 1.24M, +150%) and high-margin exports (Chery overseas 52.4%).</td><td>Squeezing JVs across the ¥100–200k band with product matrices and full PHEV coverage.</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="lead">Competitive insight</span>
+      "Cheaper" (BYD/Leapmotor cost scale) and "smarter" (Huawei/new-force intelligence labels) cannot be won head-on — the only differentiation space is "capturing the existing base and delivering certainty."
+    </div>
+  </div>
+</section>
+
+<!-- ============ S22 Differentiated Value Proposition ============ -->
+<section class="screen" data-ch="04" data-title="Value Proposition">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">04</span><span class="ch-name">Value Proposition</span></div>
+    <h2 class="s-title">Differentiated Value Proposition · The Third Identity</h2>
+    <p class="s-sub">Not "cheaper" or "smarter" — deliver "certainty" by capturing the trust assets of the existing base.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1.25fr 1fr;grid-template-rows:auto auto;gap:18px">
+      <div class="card">
+        <div class="kicker">The Proposition</div>
+        <div class="card-title">"Complete Trade-in Solution" — make loyal customers' first NEV still this brand</div>
+        <div class="card-body" style="font-size:14px">For A1 existing-owner trade-ups, offer a <b>complete trade-in solution</b>: PHEV/EREV-led, smart-ready (external autonomy supply), German-quality and resale-value backstopping, with trade-in subsidy + financing + extended warranty bundled into one low-friction NEV replacement package.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:11.5px;font-weight:700;color:var(--brand-100)">＋ Gains</div><div style="font-size:12px;color:var(--ink-2);margin-top:4px">lower running costs + smart-ready experience</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:11.5px;font-weight:700;color:var(--brand-100)">＋ Losses avoided</div><div style="font-size:12px;color:var(--ink-2);margin-top:4px">avoid ICE depreciation and purchase-tax rollback</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:11.5px;font-weight:700;color:var(--brand-100)">＋ Risk reduced</div><div style="font-size:12px;color:var(--ink-2);margin-top:4px">quality record + 1,000-dealer service + warranty backstop</div></div>
+          <div style="background:#F3F5F7;border-radius:8px;padding:10px 12px"><div style="font-size:11.5px;font-weight:700;color:var(--ink-2)">− Switching cost</div><div style="font-size:12px;color:var(--ink-3);margin-top:4px">habit change, BEV/autonomy trust concerns</div></div>
+        </div>
+        <div style="margin-top:10px"><span class="tag">E57</span><span class="tag">E90</span><span class="tag">E44</span><span class="tag">E49</span><span class="tag">E60</span></div>
+      </div>
+      <div class="card">
+        <div class="kicker">The Why</div>
+        <div class="card-body" style="font-size:13.5px">
+          <p style="margin-bottom:10px">Competitors (BYD/Leapmotor) have built unreachable scale and cost advantages on <b>"value and intelligence parity"</b>; the automaker cannot win "cheaper" or "smarter" head-on.</p>
+          <p style="margin-bottom:10px">Its only differentiation is <b>"capture the base, deliver certainty"</b> — converting the trust concerns of "observing" customers into reasons to buy, using the brand's unique quality record (IQS 219 PP100), 1,000-dealer service network, 30-million customer data and premium-cluster brand assets.</p>
+          <p>The smart-ICE line already validates "ICE + intelligence" (+220%, ~122k units), PHEV/EREV sidesteps BEV shortfalls, and the complete trade-in package folds policy subsidies and trade-up upgrades into one low-friction offer.</p>
+        </div>
+        <div><span class="tag">E66</span><span class="tag">E89</span><span class="tag">E61</span><span class="tag">E64</span><span class="tag">E84</span><span class="tag">E55</span><span class="tag">E14</span></div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode"><div class="ft">Local NEV brands</div><div class="fd">cheaper · smarter · extreme value</div></div>
+      <div class="farr">↕</div>
+      <div class="fnode dk"><div class="ft">The Third Identity</div><div class="fd">German quality × NEV powertrain × trade-in convenience</div></div>
+      <div class="farr">↕</div>
+      <div class="fnode"><div class="ft">ICE-era JVs</div><div class="fd">reliable · defensive · intelligence lag</div></div>
+    </div>
+  </div>
+</section>
+<!-- ============ S23 Profit Pattern Screening ============ -->
+<section class="screen" data-ch="05" data-title="Pattern Screening">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Screening</span></div>
+    <h2 class="s-title">Profit Model · Pattern-Library Screening</h2>
+    <p class="s-sub">Screening all 21 profit patterns — 5 enter candidacy, 8 are explicitly rejected.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="kicker">Screening basis · Mercer / Slywotzky</div>
+        <div class="card-body" style="font-size:13.5px">Based on the <b>21-pattern library</b> of <i>Profit Patterns</i> / <i>The Profit Zone</i> (including the 22nd variant, "digital profit"). Scope: customer solutions, product pyramid, multi-component system, exchange, time profit, blockbuster, profit multiplier, specialization, installed base, de-facto standard, brand, specialty product, local leadership, transaction scale, value-chain position, cycle, aftermarket, new product, relative market share, experience curve, low-cost business design.</div>
+      </div>
+      <div class="card" style="grid-column:span 2;flex-direction:row;gap:14px;align-items:stretch">
+        <div style="flex:1;background:var(--brand-08);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11.5px;font-weight:700;letter-spacing:.14em;color:var(--brand-100);margin-bottom:8px">✓ Five screening criteria</div>
+          <div class="lst" style="gap:5px;font-size:12px">
+            <div class="li">Customer value fit — does it deliver A1's "certainty × satisfaction × convenience" equation?</div>
+            <div class="li">Control-point match — does it leverage the 30M customers / 1,000 dealers / brand / ICE cash flow?</div>
+            <div class="li">Industry evidence — is there a proven path in China, not just theory?</div>
+            <div class="li">Cash-flow profile — stable, predictable transition-period cash flow?</div>
+            <div class="li">Profit durability &amp; defense — resistant to price wars and scale/cost replicators?</div>
+          </div>
+        </div>
+        <div style="flex:1;padding:12px 14px">
+          <div style="font-size:11.5px;font-weight:700;letter-spacing:.14em;color:var(--brand-100);margin-bottom:8px">✓ Screening verdict</div>
+          <div style="font-size:12px;line-height:1.75;color:var(--ink-2)"><b>5 enter candidacy:</b> customer solutions (complete trade-in), aftermarket/installed base (service pool), time profit (2026–2027 first-mover), brand (rebuilt pricing power), profit multiplier (platform/channel reuse). <b>Explicitly rejected:</b> digital profit/software subscription (12.8% paid penetration, 31% frequent use), relative market share (cannot beat BYD), experience curve (no cost scale), exchange/de-facto standard (not a platform player), cycle/blockbuster/new product (not sustainable).</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fnode dk"><div class="ft">21-pattern library</div><div class="fd">Mercer / Slywotzky</div></div>
+      <div class="farr">→</div>
+      <div class="fnode dk"><div class="ft">5 candidates</div><div class="fd">C01 customer solutions · C02 aftermarket/installed base · C03 time profit · C04 brand · C05 profit multiplier</div></div>
+      <div class="farr">→</div>
+      <div class="fnode"><div class="ft">8 rejected</div><div class="fd">software subscription · relative share · experience curve · exchange/standard · cycle/blockbuster/new product</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S24 Customer Value Equation ============ -->
+<section class="screen" data-ch="05" data-title="Value Equation">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Value Equation</span></div>
+    <h2 class="s-title">Profit Model · Customer Value Equation</h2>
+    <p class="s-sub">Value-source breakdown across three segments — net value is driven mainly by "losses avoided + risk reduced."</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto auto;gap:14px">
+      <div class="card">
+        <div class="card-title">A1 · Existing-owner trade-up</div>
+        <div class="card-body" style="font-size:12px">
+          <strong>＋ Gains:</strong> per-km running-cost savings (electricity vs fuel); smart-ready product lifting experience and resale value; budget moves up to the ¥200–300k band.<br>
+          <strong>＋ Losses avoided:</strong> ICE depreciation (three-year retention down to 46.07%) and purchase-tax rollback costs; the perception gap closing.<br>
+          <strong>＋ Working-capital relief:</strong> trade-in subsidy (scrappage 12% to ¥20k / trade-in 8% to ¥15k) directly cuts net spend; OEM financing lowers down payment and monthly payment; certified used-car program takes the old car.<br>
+          <strong>＋ Risk reduced:</strong> quality record + 1,000-dealer service + lifetime powertrain warranty + steadier retention than new forces.<br>
+          <strong>− Adoption cost:</strong> habit switch, BEV/autonomy trust gaps, perception lag, trade-in process and old-car disposal.
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">Net value: positive · driven by losses avoided + risk reduced</div>
+      </div>
+      <div class="card">
+        <div class="card-title">C1 · Business / government</div>
+        <div class="card-body" style="font-size:12px">
+          <strong>＋ Gains:</strong> lower running costs for a business-class PHEV/EREV; intelligence upgrades business image and driving experience.<br>
+          <strong>＋ Losses avoided:</strong> procurement budget diverted to BYD Han/AITO; aging business-image perception.<br>
+          <strong>＋ Working-capital relief:</strong> business financing/leasing (tax planning); fleet bulk-purchase terms.<br>
+          <strong>＋ Risk reduced:</strong> B-segment reliability and aftermarket assurance; 1,000-dealer fleet coverage.<br>
+          <strong>− Adoption cost:</strong> powertrain reliability/charging concerns; fleet management habit change.
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">Net value: positive · small segment, high margin</div>
+      </div>
+      <div class="card g-span-2">
+        <div class="card-title">D1 · Other-brand trade-in · Value validation</div>
+        <div class="card-body" style="font-size:12px"><strong>Net value logic:</strong> incremental NEV trade-in from local/Japanese ICE owners; "JV quality + service network" delivers the "certainty" need; avoids losing them to a forced choice between "ICE JV" and "local NEV." Net value is weaker than A1 (no trust base) — an incremental complement with higher acquisition cost.</div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <tr><th style="width:22%">Target</th><th style="width:44%">Net value logic</th><th>Value metrics</th></tr>
+            <tr><td><strong>A1</strong></td><td>Positive, driven mainly by "losses avoided + risk reduced" — the proposition is not "cheaper" but "more certain," supporting a price anchor no higher than local brands (near ¥170k).</td><td>trade-up conversion, 3-yr TCO, subsidy utilization, retention (next car still this brand), package penetration</td></tr>
+            <tr><td><strong>C1</strong></td><td>"Business certainty + smart-ready" captures the business-sedan base upgrade; value comes mainly from avoiding loss and reducing risk.</td><td>business NEV share, fleet win rate, fleet retention</td></tr>
+            <tr><td><strong>D1</strong></td><td>Weaker than A1 (no trust base); an incremental complement.</td><td>cross-brand trade-in conversion, NEV share net add</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S25 Candidate Patterns ============ -->
+<section class="screen" data-ch="05" data-title="Candidate Patterns">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Candidates</span></div>
+    <h2 class="s-title">Profit Model · Candidate Patterns</h2>
+    <p class="s-sub">Five candidates — from gateway to capture layer.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">C01 · Customer Solutions (Complete Trade-in)</div>
+          <span class="badge enter">Primary pattern</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px">Bundle "old-car disposal + new car (PHEV/EREV) + subsidy filing + financing/insurance + extended warranty" into one complete trade-in solution for A1, carrying the entire replacement journey in a single low-friction offer; profit comes from new-car margin + financing/insurance commissions + extended warranty, and bundling protects the transaction price (avoiding one-point price wars). <strong>Fit:</strong> the only pattern built on non-replicable control points — 30M installed-customer data (E61), the 1,000-dealer channel (E89) and the policy trade-in dividend (E49); trade-in programs (11.5M units / ¥1.6tn, E49) have made replacement a policy-driven real need — evidence is strong.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">C02 · Aftermarket / Installed Base — service pool</div>
+        <div class="card-body" style="font-size:13.5px">With 30M installed customers + 1,000 dealers as the installed base, capture service profit from "aftermarket + extended warranty + used cars + financing/insurance"; ICE transition cash flow (¥1.0–1.2tn service, 80.8% of dealer gross margin) funds the NEV build, shifting long-term to battery inspection/used-car/extended warranty. <strong>Fit:</strong> a traditional strength and the only pool still JV-dominated; the cash-flow profile matches the "fund the transition with ICE profits" rhythm.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">C03 · Time Profit — 2026–2027 first-mover</div>
+        <div class="card-body" style="font-size:13.5px">In the overlap of the purchase-tax window (expires end-2027, E47) and external tech delivery (autonomy from Q3 2026, new-platform 40% cost-down, new EEA, E90), be first to offer A1 "smart-ready + PHEV/EREV" certainty and build the "JV existing-base" mindshare before competitors. <strong>Fit:</strong> matches the 2026–2027 launch cadence; but the window is externally given and expiring — a supporting, not primary, pattern.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">C04 · Brand — rebuilt pricing power</div>
+        <div class="card-body" style="font-size:13.5px">Rebuild the "German quality × smart-ready" perception so ¥150–250k NEVs earn psychological pricing power above pure value rivals, and underwrite service and trade-in trust premiums. <strong>Fit:</strong> the underlay of the differentiated proposition and an amplifier for retention and resale; but rebuilding takes time and product proof — a supporting pattern, not a standalone revenue source.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">C05 · Profit Multiplier — platform/channel reuse</div>
+        <div class="card-body" style="font-size:13.5px">Reuse the new platform/EEA (E90), external autonomy supply (E90), the 1,000-dealer channel (E89) and 30-million data (E61) across "PHEV/EREV/BEV" product lines and "new car/service/finance" profit points — the same customer contributes new-car, financing, extended-warranty and used-car profit within one lifecycle. <strong>Fit:</strong> interlocks naturally with C01 + C02; but it generates profit only through the quality of other patterns — a layering pattern.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S26 Pattern Architecture ============ -->
+<section class="screen" data-ch="05" data-title="Pattern Architecture">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Architecture</span></div>
+    <h2 class="s-title">Pattern Architecture · The Value-Capture System</h2>
+    <p class="s-sub">C01 as gateway, C02 as capture layer, C03/C04 as timing and support, C05 as layering.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:11.5px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">GATEWAY · ACQUIRE</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C01</div>
+          <div style="font-size:12px;color:var(--ink-2)">Customer solutions · complete trade-in (carried by NEV)</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:11.5px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">TOUCH · CHANNEL</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C01/C03</div>
+          <div style="font-size:12px;color:var(--ink-2)">channel restructuring (1,000 dealers + NEV outlets)</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:11.5px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">MONETIZE · SERVICE</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C02</div>
+          <div style="font-size:12px;color:var(--ink-2)">aftermarket / installed base (service profit pool)</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:11.5px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">AMPLIFY · BRAND</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C04</div>
+          <div style="font-size:12px;color:var(--ink-2)">brand perception rebuild (pricing power)</div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">Architecture conclusion</span>
+        Primary pattern: <strong>customer solutions (C01 — complete trade-in)</strong>, bundling "old car + new car + subsidy + financing + extended warranty" to capture A1 and protect pricing while locking in follow-on profit; supporting patterns: <strong>aftermarket/installed base (C02, transition cash flow and long-term profit), time profit (C03, 2026–2027 first-mover), brand (C04, pricing power)</strong>. Together they form "gateway → channel touchpoint → service monetization → brand amplifier"; <strong>C05 profit multiplier</strong> layers multiple monetizations of the same customer. Software subscription/digital profit was rejected in screening.
+      </div>
+      <div class="card">
+        <div class="card-title">Why C01 as primary rather than C02?</div>
+        <div class="card-body" style="font-size:13.5px">The strategic task is "capture the base" — if only the aftermarket pattern monetizes the 30 million existing customers, they will still drift to local NEV brands (81.2% prefer an NEV for trade-up), and the service pool will dry up as the base shrinks. Only by using the complete trade-in to keep the first NEV inside the brand (new-car margin + financing + extended warranty) does the aftermarket gain a durable installed base. Hence <strong>C01 is the gateway, C02 the capture layer</strong>. Software subscription is rejected on direct evidence (12.8% paid penetration, 31% frequent use); relative market share / experience curve are rejected because the ¥100–200k scale contest cannot be won against BYD.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S27 Value Capture Mechanisms ============ -->
+<section class="screen" data-ch="05" data-title="Capture Mechanisms">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Offerings</span></div>
+    <h2 class="s-title">Value Capture Mechanisms · Offerings &amp; Customer Value</h2>
+    <p class="s-sub">How five offerings translate "capturing the base" into deliverable customer value.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="card-title" style="font-size:15px">① Complete Trade-in (closed-loop package)</div>
+        <div class="card-body" style="font-size:13.5px">Certified old-car buy-back + new car (PHEV/EREV-led, ¥150–250k) + subsidy filing + OEM financing + extended warranty, all in one package. <strong>Target:</strong> A1 (primary), D1 (secondary). <strong>Customer value:</strong> minimal-friction ICE→NEV upgrade — subsidy realized, old-car value secured, monthly payment controlled, warranty backstop. <strong>Metrics:</strong> trade-in conversion, package penetration, subsidy utilization, retention.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">② ICE Transition Aftermarket &amp; Extended Warranty</div>
+        <div class="card-body" style="font-size:13.5px">ICE maintenance + lifetime powertrain warranty + extended warranty. <strong>Target:</strong> 30M existing ICE owners. <strong>Customer value:</strong> service reputation sustains the existing relationship and keeps the trade-in touchpoint. <strong>Metrics:</strong> aftermarket revenue, aftermarket gross-margin share (80.8%), extended-warranty penetration, visit frequency.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">③ Certified Used Cars + Residual-Value Management</div>
+        <div class="card-body" style="font-size:13.5px">Old-car buy-back, certification, resale and retention-curve operation. <strong>Target:</strong> trade-in customers and used-car buyers. <strong>Customer value:</strong> a certified above-market residual value for the old car, cutting the net replacement spend; retention management reinforces the brand. <strong>Metrics:</strong> certified volume, buy-back discount rate, three-year retention (52.39%).</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">④ OEM Financing + Insurance Cooperation</div>
+        <div class="card-body" style="font-size:13.5px">Replacement installments, residual-value leasing, insurance products. <strong>Target:</strong> A1/C1 replacement customers. <strong>Customer value:</strong> lower down payment and monthly cost; fleet programs for business customers. <strong>Metrics:</strong> financing penetration (23%), product margin, insurance commissions.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:15px">⑤ Smart-Ready as Standard</div>
+        <div class="card-body" style="font-size:13.5px">Full-scenario high-level autonomy (from Q3 2026) + new EEA + smart cockpit as a product standard, not a paid item. <strong>Target:</strong> A1 replacement customers. <strong>Customer value:</strong> removes the "JV intelligence lag" perception; smart-ready satisfaction is embedded in the vehicle, not billed separately. <strong>Metrics:</strong> standard-fitment rate, city-NOA availability and satisfaction, decision influence.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S28 Pricing & Contracts ============ -->
+<section class="screen" data-ch="05" data-title="Pricing & Contracts">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Pricing</span></div>
+    <h2 class="s-title">Pricing &amp; Contracts</h2>
+    <p class="s-sub">Payer, price formula and contract/risk-sharing design for each offering.</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:16%">Offering</th><th style="width:20%">Payer / Unit</th><th style="width:34%">Price formula · mechanism</th><th>Contract &amp; risk sharing</th></tr>
+        <tr><td><strong>Complete trade-in</strong></td><td>Trade-in customers (new car + package); financing/insurance partners (commissions/subsidized rates). Per vehicle; financing monthly.</td><td>Net customer spend = transaction price (transparent, near ¥170k anchor) − old-car buy-back − subsidy (scrappage 12% to ¥20k / trade-in 8% to ¥15k) − financing subsidy + extended-warranty fee. Transparent pricing + trade-in benefits; bundling protects the transaction price.</td><td>Combined replacement + financing + warranty contracts; old-car residual risk carried by the certified used-car system, quality risk by OEM warranty, credit risk shared with licensed financiers.</td></tr>
+        <tr><td><strong>ICE aftermarket &amp; warranty</strong></td><td>Existing ICE owners. Per visit (labor + parts) and per year (warranty).</td><td>Hours × standard rate + parts price + annual warranty fee (by age/mileage). Transparent maintenance packages + lifetime-warranty binding.</td><td>Warranty contract defines scope and exclusions; parts/quality risk by the OEM system; dealers share via service commissions.</td></tr>
+        <tr><td><strong>Certified used cars</strong></td><td>Trade-in customers (difference) and used-car buyers (certification premium). Per vehicle.</td><td>Appraised old-car value (certified) + premium buy-back − resale certification fee; resale = certified premium pricing. Certified + transparent resale manages the retention curve, using subsidies as leverage.</td><td>Buy-back contract with residual-value guarantee; residual volatility shared via certified inventory and residual-value leasing.</td></tr>
+        <tr><td><strong>OEM financing + insurance</strong></td><td>Customers (interest/rent); banks/insurers (commissions). Monthly / per policy.</td><td>Installments: principal×(1+rate)/periods; residual leasing: monthly = price − residual + funding cost; insurance: commission share. OEM subsidy + partner channel commissions, entered via the trade-in scenario rather than pure interest competition.</td><td>Financing contracts underwritten by licensed institutions with shared credit risk; insurance via commission model without underwriting risk (industry underwriting loss ¥5.6bn).</td></tr>
+        <tr><td><strong>Smart-ready standard</strong></td><td>No direct payer (cost embedded in the vehicle). Not separately billed.</td><td>Autonomy hardware cost (~¥4,600 for L2+) folded into BOM and transaction price. Standard-fitment (matching &gt;60% standard highway-NOA trend), no subscription, avoiding the "high attention, low payment" trap.</td><td>Supply agreements with autonomy/cockpit partners lock delivery and quality; OTA responsibility shared.</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S29 Revenue, Profit & Control ============ -->
+<section class="screen" data-ch="05" data-title="Revenue & Control">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Capture</span></div>
+    <h2 class="s-title">Revenue, Profit &amp; Control</h2>
+    <p class="s-sub">How profit is formed, when it is recognized, and which control points defend it.</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:16%">Offering</th><th style="width:20%">Recognition timing</th><th style="width:36%">Profit-formation logic</th><th>Control point</th></tr>
+        <tr><td><strong>Complete trade-in</strong></td><td>New-car revenue on delivery; financing commissions on funding; warranty/service fees deferred over the service period.</td><td>Bundling sustains the transaction price (avoiding pure price wars) for NEV gross margin (new-platform 40% cost-down support), plus financing/warranty service profit — higher combined per-unit contribution than a bare-car price-war scenario.</td><td>30-million customer data (targeted reach) + 1,000-dealer channel + brand trust.</td></tr>
+        <tr><td><strong>ICE aftermarket &amp; warranty</strong></td><td>Maintenance recognized immediately; warranty annually/by service period.</td><td>80.8% aftermarket gross-margin share is the transition cash-flow source funding the NEV build; partially offset over time by battery-inspection/used-car/extended-warranty new services.</td><td>1,000-dealer channel + installed customer relationships + service reputation.</td></tr>
+        <tr><td><strong>Certified used cars</strong></td><td>Difference locked at buy-back; transaction/certification income at resale.</td><td>The ¥1.29tn used-car market is an incremental pool; certification premium and retention management monetize brand equity.</td><td>Old-car supply from 30M owners + certification system + retention brand asset.</td></tr>
+        <tr><td><strong>OEM financing + insurance</strong></td><td>Commissions/interest spread on funding/policy inception.</td><td>Finance/insurance account for 36.2% of dealer gross margin — a high-margin service layer; grows as NEV financing penetration (14%) recovers.</td><td>Customer touchpoint and the trade-in scenario (bundled entry).</td></tr>
+        <tr><td><strong>Smart-ready standard</strong></td><td>No standalone revenue timing.</td><td>"Smart-ready" supports the ¥150–250k transaction price rather than subscription fees; cost controlled (new-platform 40% + autonomy hardware cost-down 30%+).</td><td>External technology partnership matrix (autonomy/smart-cockpit/chip partners).</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S30 Unit Economics ============ -->
+<section class="screen" data-ch="05" data-title="Unit Economics">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Unit Economics</span></div>
+    <h2 class="s-title">Unit Economics</h2>
+    <p class="s-sub">Revenue, cost and margin formation per NEV — labeled as directional.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">Unit of analysis</div>
+        <div class="card-body" style="font-size:13.5px">Per NEV (PHEV/EREV-led, <strong>¥150–200k core band</strong>, China basis, RMB).</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Revenue formula</div>
+        <div class="card-body" style="font-size:13.5px">Transaction price (¥150–200k, near the ¥170k anchor) − promotion/financing subsidy − portion of trade-in subsidy passed through = <strong>net revenue</strong>; price supported by the new-platform cost-down (target 40% vs. the incumbent platform), staying above the <strong>8%</strong> gross-margin JV red line.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Variable cost</div>
+        <div class="card-body" style="font-size:13.5px">Battery system <strong>35–50%</strong> of BOM + powertrain 7–10% + autonomy sensors (~¥4,600 for L2+) + body/electronics + manufacturing and materials; battery pricing constrained by the CATL/BYD duopoly (CR2 ~65%) — <strong>the largest uncontrollable cost item</strong>.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Contribution-margin logic</div>
+        <div class="card-body" style="font-size:13.5px">Industry per-unit net-margin ceiling is <strong>¥5,000–7,000</strong> (~1/3–2/5 of Toyota); sustain positive contribution through vehicle gross margin (new-platform cost-down + PHEV/EREV reusing the ICE powertrain) and lift combined per-unit economics with service profit (aftermarket/finance/warranty) — bare-vehicle profitability depends on scale and cost-down.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Working capital &amp; cash conversion</div>
+        <div class="card-body" style="font-size:13.5px">Capacity utilization ~<strong>38%</strong> strains fixed-cost absorption; order-based production + low-inventory NEV channels cut inventory and working capital; ICE aftermarket cash flow serves as the transition working-capital reservoir.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Sensitivity</div>
+        <div class="card-body" style="font-size:13.5px">Sales (ramp pace), transaction price (every <strong>−1%</strong> erodes full margin), battery cost (35–50% of BOM), capacity utilization (38%→55%+ fixed-cost absorption), trade-in conversion.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S31 Profitability Estimate ============ -->
+<section class="screen" data-ch="05" data-title="Profitability">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Projection</span></div>
+    <h2 class="s-title">Profitability Estimate · Three Stages &amp; Drivers</h2>
+    <p class="s-sub">Directional, not a precise profit commitment — the conclusion rests on two directional assumptions.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
+        <div class="card">
+          <div class="kicker">Stage 1 · Transition 2026–2027</div>
+          <div class="card-body" style="font-size:13.5px">ICE aftermarket cash flow (the brand's share of the ¥1.0–1.2tn service pool) as the <b>main profit source</b>; NEV runs at breakeven/small loss to buy window-period ramp.</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Stage 2 · Growth 2028–2030</div>
+          <div class="card-body" style="font-size:13.5px">After the new-platform cost-down lands, NEV gross margin <b>turns positive</b>, and the service pool creates "vehicle + service" dual profit.</div>
+        </div>
+        <div class="card tint">
+          <div class="kicker">Stage 3 · Steady state</div>
+          <div class="card-body" style="font-size:13.5px">Per-unit net margin in the ¥5,000–7,000 industry range plus service-profit thickening — overall profitability is sustainable; <b>software subscription excluded from revenue</b>. Conclusion marked <strong>directional</strong>, dependent on trade-in conversion and cost-down.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Profit drivers</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px">
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:12px"><b>① Trade-in conversion</b><div style="color:var(--ink-3);margin-top:3px">annual reach &amp; conversion of the 30M base (A07)</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:12px"><b>② Platform 40% cost-down</b><div style="color:var(--ink-3);margin-top:3px">decides NEV gross margin (A03)</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:12px"><b>③ Service-profit penetration</b><div style="color:var(--ink-3);margin-top:3px">aftermarket/warranty/used-car/finance thickening</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:12px"><b>④ Capacity utilization</b><div style="color:var(--ink-3);margin-top:3px">38%→55%+ fixed-cost absorption (E88)</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:12px"><b>⑤ Window shipments</b><div style="color:var(--ink-3);margin-top:3px">ramp inside the tax/trade-in window (E47/E49)</div></div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">Breakeven / payback · directional</span>
+        At a ¥5,000–7,000 per-unit net margin and 38% capacity utilization, the NEV business needs <b>hundreds-of-thousands-of-units annual volume</b> (a structural NEV shift within the current ~102.4k-unit scale plus a capture ratio) to absorb fixed costs and reach vehicle breakeven; at the company level, ICE aftermarket cash flow covers the transition loss, and payback depends on the 2026–2027 ramp. Precise figures are directional because per-unit cost data is not public (data gap).
+      </div>
+    </div>
+        <div class="hbar">
+        <div style="flex:40%;background:var(--brand-100)">Transition 2026–27 · ICE aftermarket cash flow</div>
+        <div style="flex:35%;background:var(--brand-60)">Growth 2028–30 · vehicle + service profit</div>
+        <div style="flex:25%;background:var(--brand-40)">Steady state · service pool thickening</div>
+      </div>
+      <div class="hleg">
+        <span><i style="background:var(--brand-100)"></i>NEV ramps at breakeven/small loss, funded by ICE</span>
+        <span><i style="background:var(--brand-60)"></i>cost-down lands, NEV margin turns positive</span>
+        <span><i style="background:var(--brand-40)"></i>¥5,000–7,000/unit + aftermarket/finance/warranty</span>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S32 Validation Tests ============ -->
+<section class="screen" data-ch="05" data-title="Validation Tests">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Validation</span></div>
+    <h2 class="s-title">Validation Tests</h2>
+    <p class="s-sub">Whether the design holds is tested by metrics and thresholds — each is reviewable and falsifiable.</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:22%">Assumption</th><th style="width:15%">Key metrics</th><th style="width:30%">Threshold / signal</th><th style="width:22%">Method</th><th>Cadence</th></tr>
+        <tr><td><strong>Base capture works</strong> (A01/A07)</td><td>existing-owner trade-up conversion, package penetration</td><td>vs. 81.2% industry flow: pilot conversion ≥60% of the industry mean and retention clearly above status quo</td><td>2026–2027 trade-up pilot (data assetization + targeted reach)</td><td>Quarterly</td></tr>
+        <tr><td><strong>Platform 40% cost-down lands</strong> (A03)</td><td>new-platform BOM/gross margin vs. incumbent</td><td>first model's per-unit margin ≥ ¥5,000–7,000 or gross margin ≥8%</td><td>BOM teardown and margin disclosure tracking</td><td>Per launch</td></tr>
+        <tr><td><strong>Smart-ready delivered</strong> (A04)</td><td>city-NOA availability, satisfaction, standard-fitment rate</td><td>from Q3 2026, availability/satisfaction at mainstream-local parity; no subscription-revenue target</td><td>launch-model reviews and after-sales data</td><td>Quarterly</td></tr>
+        <tr><td><strong>Service pool funds the transition</strong> (A05)</td><td>aftermarket+finance+used-car margin share, warranty penetration</td><td>aftermarket+finance margin share maintained ≥55% and NEV service revenue offsets ≥30% of ICE decline</td><td>quarterly dealer margin-structure monitoring</td><td>Quarterly</td></tr>
+        <tr><td><strong>Software subscription not dependable</strong> (E98)</td><td>city-NOA paid penetration and usage</td><td>if paid penetration breaks 20% with rising A1 willingness, reassess; otherwise keep standard-fitment</td><td>industry penetration tracking + target research</td><td>Semi-annual</td></tr>
+        <tr><td><strong>Utilization recovery &amp; ramp</strong> (E88)</td><td>capacity utilization, monthly NEV ramp</td><td>38%→55%+; upward monthly NEV slope inside the 2026–2027 window</td><td>shareholder production/sales bulletins (E82 basis)</td><td>Monthly</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- ============ S33 Activity Scope ============ -->
+<section class="screen" data-ch="06" data-title="Activity Scope">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">06</span><span class="ch-name">Activity Scope</span></div>
+    <h2 class="s-title">Activity Scope · Enter vs. Do Not Enter</h2>
+    <p class="s-sub">Do the complete loop of capturing the base; do not fight the chasing-growth battles.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto">
+      <div class="card" style="background:var(--brand-08);border-color:var(--brand-12)">
+        <div class="card-title" style="color:var(--brand-100)">✓ Enter · the capture loop</div>
+      </div>
+      <div class="card" style="background:#F1F3F5;border-color:#D7DEE6">
+        <div class="card-title">✕ Do not enter · chasing-growth battles</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card"><div style="font-size:13.5px"><b>① NEV R&amp;D / manufacturing / sales</b> (PHEV/EREV-led + BEV, ¥150–250k): new platform/EEA, autonomy go-live, 7 launches in 2026 and ~30 in 2027.<div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">The carrier for capturing the 30-million base (E61/E90); PHEV/EREV minimizes friction for "observing" existing customers.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>② Installed-base data assetization &amp; trade-in capture</b>: model 30M customers by model/age/region, targeted reach and complete trade-in operations.<div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">A control point "nobody else has, unique to this brand" (E61); trade-in policy and upgrades make targeted capture executable.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>③ Channel restructuring</b>: OEM-controlled pricing, dealer-as-service; transparent pricing + NEV outlet density in ¥150–250k + service-commission model.<div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">The wholesale-price-differential model is structurally exhausted; the NEV agency/hybrid model is profitable.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>④ ICE base transition operation</b>: maintain the three cash-cow models + smart-ICE line.<div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">ICE aftermarket cash flow is the transition resource; the smart-ICE line validates "ICE + intelligence."</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>⑤ Service chain</b>: aftermarket + warranty + certified used cars + OEM financing/insurance; build battery-inspection/used-car-appraisal/warranty services.<div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">Service pools (¥1.0–1.2tn service + ¥1.29tn used cars + ~¥3tn finance) are the long-term profit layer.</div></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card"><div style="font-size:13.5px"><b>① In-house batteries (vertical integration)</b><div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">Highest attraction but lowest fit (2.55, the lowest total); manage cost via long-term supplier lock-in and second-source strategy.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>② Full-stack in-house autonomy software</b><div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">External supply is both a reality and the efficient path; subscription revenue is not dependable in China; in-house is uneconomic.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>③ Sub-¥100k price war / low-tier first purchases</b><div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">Local share 65.2% in ¥100–200k (BYD 19.2%); cost and scale unassailable; cede the B2 segment.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>④ Above-¥300k premium intelligence fight</b><div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">AITO ¥391k average price, premium NEV SUV share &gt;20%; premium is left to the group's premium brand.</div></div></div>
+        <div class="card"><div style="font-size:13.5px"><b>⑤ Near-term exports / overseas profit</b><div style="color:var(--ink-3);margin-top:4px;font-size:12.5px">The local export path is not replicable by the JV's Chinese side (no overseas channel/brand capability); estimates are China-only.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S34 Strategic Control ============ -->
+<section class="screen" data-ch="07" data-title="Strategic Control">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">07</span><span class="ch-name">Strategic Control</span></div>
+    <h2 class="s-title">Strategic Control · Five Control Points</h2>
+    <p class="s-sub">"Converting installed-base control-point assets into growth-point control points over time" — four owned, one partnered.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">Control 1 · Customer relationship</div>
+        <div class="card-title">30-million customer data</div>
+        <div class="card-body" style="font-size:13.5px">Model by model/age/region/trade-in probability to build "replacement prediction + targeted reach," capturing the base with data advantages local brands and new forces cannot replicate; data compliance built in.</div>
+        <div><span class="tag">E61</span><span class="tag">A07</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">Control 2 · Channel &amp; service</div>
+        <div class="card-title">1,000-dealer channel &amp; service reputation</div>
+        <div class="card-body" style="font-size:13.5px">1,000+ dealers + J.D. Power IQS top-3 / JV CACSI champion — converting service reputation into a trust premium for "observing" customers and countering new-force direct-sales gaps in lower-tier cities.</div>
+        <div><span class="tag">E89</span><span class="tag">E66</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">Control 3 · Brand</div>
+        <div class="card-title">Brand equity</div>
+        <div class="card-body" style="font-size:13.5px">Rebuild "German quality × smart-ready": decades of premium-cluster awareness remain while the mass cluster is locally dominated — carry the proven "ICE + intelligence" positioning into PHEV/EREV lines to restore pricing power and retention.</div>
+        <div><span class="tag">E64</span><span class="tag">E84</span><span class="tag">E44</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div class="kicker">Control 4 · Cash flow</div>
+        <div class="card-title">ICE-base cash flow</div>
+        <div class="card-body" style="font-size:13.5px">The three cash-cow models and ICE aftermarket act as the transition resource reservoir funding the NEV build; complete the "cash flow → new products" transfer within the ~−9%/year base contraction pace.</div>
+        <div><span class="tag">E84</span><span class="tag">E35</span><span class="tag">E08</span><span class="tag">A05</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div class="kicker">Control 5 · Tech supply (partnered)</div>
+        <div class="card-title">External technology partnership matrix</div>
+        <div class="card-body" style="font-size:13.5px">Lock in "smart-ready" certainty and cost through autonomy supply (full-scenario provider), platform/EEA (40% cost-down) and smart-cockpit partners — <strong>the control point is contract lock-in and delivery management, not technology ownership</strong>; autonomy/platform capabilities are gained through partnerships, not built in-house.</div>
+        <div><span class="tag">E90</span><span class="tag">E94</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S35 Risk Management ============ -->
+<section class="screen" data-ch="08" data-title="Risk Management">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">08</span><span class="ch-name">Risk Management</span></div>
+    <h2 class="s-title">Risk Management · Six Dimensions</h2>
+    <p class="s-sub">The biggest risk is not "moving too slowly" but "subsidizing NEVs without forming a positive loop."</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">Risk 1 · Policy</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> purchase-tax halving expires end-2027 and the price gap closes; dual-credit negative costs rise (48%/58% ratios) and China VII squeezes the ICE base a second time, compressing transition cash flow.<strong> Mitigation:</strong> define 2026–2027 as a "pull-forward + capture" window, maximize window shipments with 7 launches; use PHEV/EREV to hedge dual-credit/China VII; prepare post-rollback pricing plans.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Risk 2 · Competition &amp; industry</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> price wars keep eroding per-unit margin (terminal discounts 27.77%, JV gross margin below 8%); responding with price would trigger a "volume-for-price" trap.<strong> Mitigation:</strong> do not fight with price — protect the transaction price with the complete trade-in + service profit, use the platform cost-down to convert room into share rather than loss, and cede the lowest local-price segments.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Risk 3 · Technology supply</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> if autonomy, the 40% cost-down or the new EEA slip, the 2026–2027 product window is missed — the single point of failure of an externally dependent transition.<strong> Mitigation:</strong> put supply milestones under JV governance, set delay-triggered contingency plans (backup suppliers/re-sequencing); maintain the smart-ICE floor until supply arrives.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Risk 4 · Organization &amp; JV</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> tension between the group's "profit-first" stance (2027 ROS 3–5%) and the transition's speed; if ramp losses are not tolerated, investment is cut; long JV decision chains respond slowly.<strong> Mitigation:</strong> secure written governance commitment to "3–5 year profitability tolerance + NEV budget + breakeven timetable"; prove self-funding via ICE aftermarket cash flow to reduce dependence on group capital.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Risk 5 · Customer churn</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> the 30-million base sits on a migration path where 81.2% prefer an NEV for trade-up; if products don't capture it, the "ammunition" flows entirely to local brands (Chinese brands now ~70% of the consideration set); attrition is already happening.<strong> Mitigation:</strong> make "capture the base" the top strategic priority with data assetization + complete trade-in; raise retention through service reputation and retention management.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Risk 6 · Financial</div>
+        <div class="card-body" style="font-size:13.5px"><strong>Risk:</strong> ICE cash flow shrinking (E08) faster than NEV ramp (−31.2% in 2026H1) creates a cash-flow gap; 38% utilization burdens fixed costs; per-unit NEV cost has no public data, making estimates uncertain.<strong> Mitigation:</strong> order-based production + low inventory to control working capital; use aftermarket cash flow as the transition reservoir; put per-unit cost and utilization into validation tests and data gaps.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S36 Data Gaps ============ -->
+<section class="screen" data-ch="09" data-title="Data Gaps">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">09</span><span class="ch-name">Data Gaps</span></div>
+    <h2 class="s-title">Data Gaps</h2>
+    <p class="s-sub">Eight gaps keep related estimates directional — each comes with a calibration action.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">Affects · Unit economics</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no public per-unit NEV cost/loss data — only industry ranges as directional references.<strong> Impact:</strong> unit economics and profitability estimates stay directional.<strong> Action:</strong> back-solve per-unit profit from equity income and volume deltas (flagged as estimates), or recalibrate with BOM teardown after the first new-platform model launches.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Base capture</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no historical reachable/replaceable ratio or annual replacement baseline for the 30-million base.<strong> Impact:</strong> capture ceiling and conversion targets are assumptions (A07).<strong> Action:</strong> launch the data-assetization pilot to establish reach, intent and conversion baselines.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Service profit pool</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no public margin split of aftermarket/finance/used-car for the automaker (industry figures are revenue/scale, not profit).<strong> Impact:</strong> service-pool quantification risks overstatement from "revenue-basis" figures.<strong> Action:</strong> estimate actual profit with industry fee rates and flag the basis, or obtain internal segment margin data.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Market scan · open items</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> "BEV below 80k units" is a single-source media claim; capacity utilization ~54%/38% is single-source estimation.<strong> Impact:</strong> NEV base figures and fixed-cost absorption have uncertainty bands; conclusion strength should be downgraded.<strong> Action:</strong> cross-validate with CPCA/registration data; recheck utilization against annual reports.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Metric contradictions</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> group (China) 2026H1 sales has two datasets ("971k/1,310k"); 2026H1 NEV retail −14.0% vs. wholesale +5.1% coexist.<strong> Impact:</strong> the scale and decline-rate judgment is uncertain.<strong> Action:</strong> verify against the group's 2026 interim official data; split domestic retail vs. export contribution.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Software subscription</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no industry aggregate on autonomy subscription revenue contribution (only 12.8% penetration / 31% usage as indirect evidence).<strong> Impact:</strong> the "subscription not dependable" conclusion rests on indirect evidence.<strong> Action:</strong> track autonomy-related revenue segments in leading automakers' financials as validation input.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Channel restructuring</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no quantified investment size or payback for channel restructuring (NEV outlet recovery + service-commission model).<strong> Impact:</strong> feasibility in the activity scope is qualitative only.<strong> Action:</strong> study a per-outlet unit model (build cost, service revenue, breakeven) or run dealer-survey-based estimates.</div>
+      </div>
+      <div class="card">
+        <div class="kicker">Affects · Business segment</div>
+        <div class="card-body" style="font-size:12.5px"><strong>Gap:</strong> no public size or NEV-penetration data for the business/government segment (C1).<strong> Impact:</strong> C1 is a primary target but unquantified; prioritization lacks data support.<strong> Action:</strong> estimate C1 scale and NEV acceptance from B-segment sales structure data.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S37 Evidence Index & Source ============ -->
+<section class="screen" data-ch="09" data-title="Index & Source">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">09</span><span class="ch-name">Index</span></div>
+    <h2 class="s-title">Evidence &amp; Assumption Index</h2>
+    <p class="s-sub">The full list of evidence and assumptions cited in this report, for review and traceability.</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:3fr 1fr;gap:18px">
+        <div class="card">
+          <div class="card-title">Evidence index · Evidence IDs</div>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:12px;line-height:2.2;letter-spacing:.04em">E02 · E03 · E04 · E07 · E08 · E09 · E12 · E13 · E14 · E15 · E16 · E18 · E19 · E20 · E21 · E22 · E23 · E24 · E25 · E26 · E27 · E28 · E32 · E33 · E34 · E35 · E36 · E37 · E38 · E39 · E40 · E41 · E42 · E43 · E44 · E45 · E47 · E48 · E49 · E51 · E52 · E53 · E54 · E55 · E57 · E58 · E59 · E60 · E61 · E62 · E63 · E64 · E65 · E66 · E68 · E69 · E70 · E73 · E76 · E78 · E82 · E84 · E86 · E87 · E88 · E89 · E90 · E92 · E93 · E94 · E95 · E96 · E98 · E99 · E100</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assumption index</div>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:13px;line-height:2.3">
+            A01 · A02 · A03 · A04 · A05<br>A06 · A07 · A08 · A09 · A10
+          </div>
+          <div class="card-body" style="font-size:12.5px;margin-top:8px">Directional assumptions are independently numbered, each with a validation plan and data-gap entry.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">Source · Generation info</span>
+        This file was created by Claude Cowork from Markdown generated by the Business Design skill. The source JSON and Markdown remain authoritative but are not distributed with this presentation-only public case. Evidence IDs and Assumption IDs are retained for structural demonstration; the internal source fingerprint is omitted.
+      </div>
+      <div class="flow">
+        <div class="fnode"><div class="ft">30 million</div><div class="fd">installed customers — the asset behind capturing the base</div></div>
+        <div class="fnode"><div class="ft">81.2%</div><div class="fd">of ICE owners choose an NEV for trade-up — the migration path</div></div>
+        <div class="fnode"><div class="ft">2026–2027</div><div class="fd">purchase-tax window — decides the ramp slope</div></div>
+        <div class="fnode dk"><div class="ft">One line</div><div class="fd">not chasing growth — re-engaging the existing base</div></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;align-items:center">
+        <span style="font-size:12.5px;color:var(--ink-3)">Anonymous Automaker Business Design Report · VDBD · 2026</span>
+        <span style="width:4px;height:4px;border-radius:50%;background:var(--brand-40)"></span>
+        <span style="font-size:12.5px;color:var(--ink-3)">Case study · anonymized</span>
+        <span style="width:4px;height:4px;border-radius:50%;background:var(--brand-40)"></span>
+        <span class="badge partner">End of Report</span>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- SCREENS -->
+</main>
+
+<div class="navhint" id="navhint">← → / Space to navigate · Right dots jump chapters</div>
+
+<div class="cluster" id="cluster">
+  <div class="seg"><span class="pwr"></span></div>
+  <div class="seg">
+    <span class="lab">Chapter</span>
+    <span class="val" id="cl-ch">—</span>
+  </div>
+  <div class="pg">
+    <span class="lab" style="flex:0 0 auto">Progress</span>
+    <span class="pgtrack"><span class="pgfill" id="cl-pg"></span></span>
+    <span class="val" id="cl-pos">0 / 0</span>
+  </div>
+  <div class="seg">
+    <span class="lab">Screen</span>
+    <span class="val" id="cl-scr">—</span>
+  </div>
+  <div class="seg" style="display:none" id="cl-src"></div>
+</div>
+
+<script>
+(function(){
+  var screens=Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var rail=document.getElementById('rail');
+  var cur=0,total=screens.length;
+  var chapters=[];
+  screens.forEach(function(s){
+    var c=s.getAttribute('data-ch');
+    if(chapters.indexOf(c)<0)chapters.push(c);
+  });
+  chapters.forEach(function(c,i){
+    var b=document.createElement('button');
+    b.title='章节 '+c;
+    b.addEventListener('click',function(){
+      for(var j=0;j<screens.length;j++){
+        if(screens[j].getAttribute('data-ch')===c){go(j);break;}
+      }
+    });
+    rail.appendChild(b);
+  });
+  var dots=Array.prototype.slice.call(rail.children);
+
+  function render(){
+    screens.forEach(function(s,i){s.classList.toggle('active',i===cur)});
+    dots.forEach(function(d,i){
+      d.classList.toggle('on',i===chapters.indexOf(screens[cur].getAttribute('data-ch')));
+    });
+    var ch=screens[cur].getAttribute('data-ch');
+    document.getElementById('cl-ch').textContent=ch;
+    document.getElementById('cl-pos').textContent=(cur+1)+' / '+total;
+    var kw=screens[cur].getAttribute('data-title')||'';
+    var scrEl=document.getElementById('cl-scr');
+    scrEl.textContent=kw;
+    document.getElementById('cl-pg').style.width=((cur+1)/total*100)+'%';
+    history.replaceState(null,'','#s'+(cur+1));
+  }
+  function go(n){
+    if(n<0)n=0;if(n>=total)n=total-1;
+    cur=n;render();
+  }
+  function next(){go(cur+1)}
+  function prev(){go(cur-1)}
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '||e.key==='PageDown'){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){e.preventDefault();go(0);}
+    else if(e.key==='End'){e.preventDefault();go(total-1);}
+  });
+
+  var wheelLock=false;
+  document.addEventListener('wheel',function(e){
+    if(wheelLock)return;
+    wheelLock=true;
+    setTimeout(function(){wheelLock=false},700);
+    if(e.deltaY>20)next();else if(e.deltaY<-20)prev();
+  },{passive:true});
+
+  var tx=0;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-tx;
+    if(Math.abs(dx)>60){dx<0?next():prev();}
+  },{passive:true});
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('.rail'))return;
+    if(e.target.closest('.cluster'))return;
+    var r=window.innerWidth;
+    if(e.clientX>r*0.72)next();else if(e.clientX<r*0.28)prev();
+  });
+
+  var hint=document.getElementById('navhint');
+  var t;
+  function flashHint(){hint.classList.add('show');clearTimeout(t);t=setTimeout(function(){hint.classList.remove('show')},3200);}
+  document.addEventListener('keydown',flashHint);
+
+  /* Fit-to-screen: scale the whole deck from a 1440x900 design baseline so
+     dense consulting pages never clip on smaller viewports. */
+  var BASE_W=1440,BASE_H=900;
+  function fit(){
+    var s=Math.min(1,window.innerWidth/BASE_W,window.innerHeight/BASE_H);
+    try{document.documentElement.style.zoom=s;}catch(e){}
+  }
+  window.addEventListener('resize',fit);
+  fit();
+
+  var h=parseInt((location.hash||'').replace('#s',''),10);
+  go(isNaN(h)?0:h-1);
+  window.addEventListener('hashchange',function(){
+    var hh=parseInt((location.hash||'').replace('#s',''),10);
+    if(!isNaN(hh))go(hh-1);
+  });
+  if(total>1)setTimeout(flashHint,900);
+})();
+</script>
+</body>
+</html>

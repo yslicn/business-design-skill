@@ -1,0 +1,380 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MarketInsight",
+  "description": "03 步 Analyst 产出的市场洞察契约。通过 Sxx 来源、Exx 证据和 evidence_ids 建立可追溯的价值链利润池分析。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "industry",
+    "geography",
+    "analysis_period",
+    "currency",
+    "value_chain_overview",
+    "value_chain_segments",
+    "industry_trends",
+    "policy",
+    "competitor_overview",
+    "evidence_registry",
+    "sources",
+    "data_gaps"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1"
+    },
+    "industry": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "geography": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "analysis_period": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "currency": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "value_chain_overview": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "value_chain_segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "revenue_scale",
+          "profit_margin",
+          "profit_pool_assessment",
+          "growth_and_value_migration",
+          "competitive_intensity",
+          "players",
+          "business_models",
+          "evidence_ids"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "name": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "description": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "revenue_scale": {
+            "$ref": "#/definitions/metric"
+          },
+          "profit_margin": {
+            "$ref": "#/definitions/metric"
+          },
+          "profit_pool_assessment": {
+            "$ref": "#/definitions/traceableClaim"
+          },
+          "growth_and_value_migration": {
+            "$ref": "#/definitions/traceableClaim"
+          },
+          "competitive_intensity": {
+            "$ref": "#/definitions/traceableClaim"
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "financials", "position", "evidence_ids"],
+              "properties": {
+                "name": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "financials": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "position": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/nonEmptyIdArray"
+                }
+              }
+            }
+          },
+          "business_models": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "how_make_money", "main_customers", "evidence_ids"],
+              "properties": {
+                "name": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "how_make_money": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "main_customers": {
+                  "$ref": "#/definitions/nonEmptyString"
+                },
+                "evidence_ids": {
+                  "$ref": "#/definitions/nonEmptyIdArray"
+                }
+              }
+            }
+          },
+          "evidence_ids": {
+            "$ref": "#/definitions/nonEmptyIdArray"
+          }
+        }
+      }
+    },
+    "industry_trends": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/traceableClaim"
+      }
+    },
+    "policy": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/traceableClaim"
+      }
+    },
+    "competitor_overview": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "summary", "evidence_ids"],
+        "properties": {
+          "name": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "summary": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "evidence_ids": {
+            "$ref": "#/definitions/nonEmptyIdArray"
+          }
+        }
+      }
+    },
+    "evidence_registry": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement", "evidence_type", "confidence", "source_ids"],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "statement": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "evidence_type": {
+            "type": "string",
+            "enum": ["verified", "triangulated", "estimated"]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "source_ids": {
+            "$ref": "#/definitions/nonEmptyIdArray"
+          },
+          "calculation_or_basis": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "evidence_type": {
+                  "const": "estimated"
+                }
+              }
+            },
+            "then": {
+              "required": ["calculation_or_basis"],
+              "properties": {
+                "calculation_or_basis": {
+                  "$ref": "#/definitions/nonEmptyString"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "publisher", "url", "accessed_at"],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "title": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "publisher": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "url": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "published_at": {
+            "type": "string"
+          },
+          "accessed_at": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      }
+    },
+    "data_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "impact", "recommended_action"],
+        "properties": {
+          "topic": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "impact": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "recommended_action": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "idArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "nonEmptyIdArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "traceableClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "evidence_ids"],
+      "properties": {
+        "statement": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "evidence_ids": {
+          "$ref": "#/definitions/nonEmptyIdArray"
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "display_value",
+        "metric_type",
+        "year_or_period",
+        "geography",
+        "evidence_status",
+        "evidence_ids"
+      ],
+      "properties": {
+        "display_value": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "metric_type": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "year_or_period": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "geography": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "evidence_status": {
+          "type": "string",
+          "enum": ["verified", "triangulated", "estimated", "unknown"]
+        },
+        "evidence_ids": {
+          "$ref": "#/definitions/idArray"
+        },
+        "estimate_basis": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_status": {
+                "enum": ["verified", "triangulated", "estimated"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "$ref": "#/definitions/nonEmptyIdArray"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "evidence_status": {
+                "const": "estimated"
+              }
+            }
+          },
+          "then": {
+            "required": ["estimate_basis"],
+            "properties": {
+              "estimate_basis": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

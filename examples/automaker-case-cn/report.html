@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>某汽车公司业务设计报告 · VDBD</title>
+<style>
+:root{
+  --brand-100:#002E5C; --brand-90:#0A3B6E; --brand-80:#104A80; --brand-60:#2A6BA8;
+  --brand-40:#5B90BE; --brand-25:#9DBDD6; --brand-12:#D8E4EE; --brand-08:#EAF1F7;
+  --ink:#10141A; --ink-2:#44505C; --ink-3:#7C8794;
+  --paper:#F6F8FA; --line:#DEE5EC; --sun:#FFDE00; --white:#FFFFFF;
+  --mono:"SF Mono","Roboto Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Segoe UI",sans-serif;
+  --r:10px;
+  --shadow:0 8px 24px rgba(16,20,26,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--brand-100);color:#fff}
+
+/* ===== Screens ===== */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease,visibility .5s;will-change:opacity,transform}
+.screen.active{opacity:1;visibility:visible;transform:none;z-index:2}
+@media (prefers-reduced-motion:reduce){.screen{transition:none}}
+
+.s-head{padding:16px 150px 0 56px;flex:0 0 auto}
+.eyebrow{display:flex;align-items:center;gap:18px;margin-bottom:10px}
+.ch-num{font-family:var(--mono);font-weight:600;font-size:15px;letter-spacing:.12em;color:var(--brand-100);border:1.5px solid var(--brand-100);border-radius:5px;padding:3px 8px}
+.ch-name{font-size:14px;font-weight:600;letter-spacing:.28em;color:var(--ink-3);text-transform:uppercase}
+.s-title{font-size:36px;font-weight:800;letter-spacing:.01em;color:var(--ink);line-height:1.18}
+.s-sub{font-size:16px;color:var(--ink-2);margin-top:8px;max-width:960px;line-height:1.7}
+.s-body{padding:12px 56px 72px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+
+.grid{width:100%;max-width:1680px;margin:0 auto;display:grid;gap:18px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-2-1{grid-template-columns:2fr 1fr}
+.grid-1-2{grid-template-columns:1fr 2fr}
+.grid-rows{grid-template-rows:auto auto}
+.g-span-2{grid-column:span 2}
+.g-span-3{grid-column:span 3}
+.r-span-2{grid-row:span 2}
+
+/* ===== Cards ===== */
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:17px 20px;display:flex;flex-direction:column;gap:10px;min-height:0;position:relative}
+.card.tint{background:var(--brand-08);border-color:var(--brand-12)}
+.card.dark{background:var(--brand-100);border-color:var(--brand-100)}
+.card.dark .c-title,.card.dark .c-body{color:#EAF1F7}
+.card.dark .c-kicker{color:#9DBDD6}
+.card.flat{box-shadow:none;background:transparent;border-color:var(--line)}
+.card-title{font-size:17.5px;font-weight:700;color:var(--ink);display:flex;align-items:baseline;gap:18px}
+.card-title .idx{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--brand-100)}
+.card-body{font-size:15px;line-height:1.75;color:var(--ink-2)}
+.card-body strong{color:var(--ink);font-weight:700}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.18em;color:var(--brand-60);text-transform:uppercase}
+
+/* KPI */
+.kpi .num{font-size:42px;font-weight:800;color:var(--brand-100);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .num small{font-size:16px;font-weight:600;color:var(--ink-3);margin-left:4px}
+.kpi .lbl{font-size:14.5px;color:var(--ink-2);margin-top:7px;line-height:1.5}
+
+/* Score bars */
+.bar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;position:relative;height:26px}
+.bar-row .bl{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row .bv{font-family:var(--mono);color:var(--brand-100);font-weight:600}
+.bar-track{position:absolute;left:0;right:64px;bottom:3px;height:4px;background:var(--brand-12);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;display:block;background:linear-gradient(90deg,var(--brand-80),var(--brand-40));border-radius:2px}
+.card.score{gap:8px;padding:15px 18px}
+.card.concl{padding:16px 24px;gap:18px}
+
+.card.concl .card-body{font-size:15px;line-height:1.72}
+/* enrichment components */
+.flow{display:flex;align-items:stretch;gap:9px;margin-top:16px}
+.flow .fnode{flex:1;border-radius:8px;padding:13px 16px;background:var(--brand-08);border:1px solid var(--brand-12);display:flex;flex-direction:column;gap:5px;justify-content:center;min-height:76px}
+.flow .fnode.dk{background:var(--brand-100);border-color:var(--brand-100)}
+.flow .fnode.dk .ft{color:#fff}
+.flow .fnode.dk .fd{color:#9DBDD6}
+.flow .ft{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.flow .fd{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.flow .farr{flex:0 0 auto;display:flex;align-items:center;color:var(--brand-40);font-weight:800;font-size:16px}
+.hbar{display:flex;height:30px;border-radius:6px;overflow:hidden;margin-top:14px;font-size:12px;font-weight:700;color:#fff}
+.hbar div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+.hleg{display:flex;gap:18px;margin-top:8px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.hleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+
+/* tags & badges */
+.tag{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--brand-100);background:var(--brand-08);border:1px solid var(--brand-12);border-radius:4px;padding:1px 6px;margin:0 2px 2px 0;letter-spacing:.02em}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;border-radius:6px;padding:4px 10px;letter-spacing:.04em}
+.badge.enter{background:var(--brand-100);color:#fff}
+.badge.expand{background:var(--brand-100);color:#fff}
+.badge.defend{background:#E8EBEE;color:#44505C;border:1px solid #CBD4DC}
+.badge.partner{background:var(--brand-12);color:var(--brand-100)}
+.badge.avoid{background:#3A3F46;color:#fff}
+.badge.observe{background:var(--brand-08);color:var(--ink-2);border:1px solid var(--brand-12)}
+
+/* callout (core judgment) */
+.callout{border-left:5px solid var(--brand-100);background:var(--brand-08);border-radius:0 var(--r) var(--r) 0;padding:15px 20px;font-size:15.5px;line-height:1.8;color:var(--ink)}
+.callout strong{color:var(--brand-100)}
+.callout .lead{display:block;font-size:13.5px;font-weight:700;letter-spacing:.2em;color:var(--brand-60);margin-bottom:8px;text-transform:uppercase}
+.callout.dark{background:var(--brand-100);border-left-color:var(--sun)}
+.callout.dark,.callout.dark strong{color:#EAF1F7}
+
+/* tables */
+.table-wrap{border:1px solid var(--line);border-radius:var(--r);background:var(--white);overflow:hidden;min-height:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--brand-100);color:#fff;font-weight:600;text-align:left;padding:9px 12px;letter-spacing:.05em;font-size:13.5px;position:sticky;top:0}
+td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.55;color:var(--ink-2)}
+tr:nth-child(even) td{background:#FAFCFE}
+td strong{color:var(--ink)}
+.t-wrap-scroll{overflow:auto;height:100%;min-height:0}
+
+/* lists */
+.lst{display:flex;flex-direction:column;gap:8px}
+.lst .li{display:flex;gap:10px;font-size:15px;line-height:1.7;color:var(--ink-2)}
+.lst .li::before{content:"";flex:0 0 6px;height:6px;border-radius:50%;background:var(--brand-60);margin-top:8px}
+
+/* ===== Fixed chrome ===== */
+.brand{position:fixed;top:18px;right:26px;z-index:50;text-align:right;pointer-events:none}
+.brand .zh{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:.06em}
+.brand .en{font-family:var(--mono);font-size:11px;letter-spacing:.34em;color:var(--ink-3)}
+
+.rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:10px}
+.rail button{width:10px;height:10px;border-radius:50%;border:1px solid var(--brand-25);background:transparent;cursor:pointer;position:relative;transition:all .25s}
+.rail button.on{background:var(--brand-100);border-color:var(--brand-100);transform:scale(1.15)}
+.rail button.on::after{content:"";position:absolute;right:14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-right:5px solid var(--brand-100)}
+
+/* ===== Instrument cluster (signature) ===== */
+.cluster{position:fixed;left:0;right:0;bottom:0;height:52px;background:var(--brand-100);color:#EAF1F7;z-index:60;display:flex;align-items:center;padding:0 26px;gap:0;box-shadow:0 -6px 24px rgba(16,20,26,.18)}
+.cluster .seg{display:flex;align-items:center;gap:10px;height:100%}
+.cluster .seg+.seg{border-left:1px solid rgba(255,255,255,.14);padding-left:26px;margin-left:26px}
+.cluster .pwr{width:8px;height:8px;background:var(--sun);border-radius:50%;box-shadow:0 0 10px rgba(255,222,0,.8)}
+.cluster .lab{font-size:11px;letter-spacing:.26em;color:#9DBDD6;text-transform:uppercase}
+.cluster .val{font-family:var(--mono);font-size:14.5px;font-weight:600;letter-spacing:.05em;color:#fff}
+.cluster .pg{flex:1;display:flex;align-items:center;gap:18px;height:100%}
+.cluster .pgtrack{flex:1;height:3px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden}
+.cluster .pgfill{height:100%;background:var(--sun);width:0%;transition:width .4s ease}
+.cluster .hint{font-size:13px;color:#9DBDD6;letter-spacing:.08em}
+
+/* ===== Cover ===== */
+.cover{justify-content:center;background:radial-gradient(1200px 700px at 78% -10%,#0A3B6E 0%,var(--brand-100) 55%,#001E3C 100%);color:#fff}
+.cover .inner{padding:60px 8vw;display:flex;flex-direction:column;justify-content:center;height:100%}
+.cover .topline{display:flex;align-items:center;gap:18px;margin-bottom:auto}
+.cover .kicker{color:#9DBDD6}
+.cover h1{font-size:clamp(42px,5.5vw,68px);font-weight:800;letter-spacing:.02em;line-height:1.18;margin:26px 0 18px}
+.cover h1 em{font-style:normal;color:var(--sun)}
+.cover .sub{font-size:clamp(15.5px,1.45vw,19px);color:#C7D8E6;line-height:1.9;max-width:780px}
+.cover .rule{width:100%;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.5),rgba(255,255,255,.06));margin:34px 0}
+.cover .meta{display:flex;gap:44px;flex-wrap:wrap}
+.cover .meta .m{font-family:var(--mono);font-size:14.5px;letter-spacing:.14em;color:#9DBDD6}
+.cover .meta .m b{display:block;font-size:17px;color:#fff;letter-spacing:.02em;font-family:var(--sans);margin-top:6px;font-weight:600}
+.cover .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:34px;max-width:900px}
+.cover .ccard{border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:14px 16px;background:rgba(255,255,255,.05)}
+.cover .ccard .k{font-size:13px;letter-spacing:.2em;color:#9DBDD6;margin-bottom:8px}
+.cover .ccard .v{font-size:16px;line-height:1.6;color:#EAF1F7}
+.cover .bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;gap:20px}
+.cover .hint{font-family:var(--mono);font-size:14px;letter-spacing:.2em;color:#9DBDD6}
+
+/* nav hint */
+.navhint{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:40;font-size:13.5px;color:var(--ink-3);background:rgba(255,255,255,.92);border:1px solid var(--line);padding:6px 14px;border-radius:20px;box-shadow:var(--shadow);letter-spacing:.06em;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.navhint.show{opacity:1}
+
+/* responsive */
+@media (max-width:1100px){
+  .s-head{padding:24px 140px 0 28px}
+  .s-title{font-size:31px}
+  .s-body{padding:18px 28px 70px}
+  .grid-3,.grid-4{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-2-1,.grid-1-2{grid-template-columns:1fr}
+  .g-span-2,.g-span-3{grid-column:span 1}
+}
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="zh">某汽车公司</div>
+  <div class="en">ANONYMOUS AUTOMAKER · VDBD 2026</div>
+</div>
+
+<nav class="rail" id="rail" aria-label="章节导航"></nav>
+
+<main id="deck">
+<!-- ============ S1 封面 ============ -->
+<section class="screen cover" data-ch="00" data-title="封面">
+  <div class="inner">
+    <div class="topline">
+      <span class="kicker">VALUE-DRIVEN BUSINESS DESIGN</span>
+      <span class="kicker">·</span>
+      <span class="kicker">业务设计报告 · 2026</span>
+    </div>
+    <h1>承接存量，<em>重建</em>增长<br>与品牌势能</h1>
+    <div class="sub">某汽车公司——某跨国汽车集团与中方股东的合资企业，聚焦单一品牌。本报告以「新能源整车为门户、服务后市场为价值捕获层」，对 3000 万保有客户基盘进行系统性业务设计。</div>
+    <div class="rule"></div>
+    <div class="cards">
+      <div class="ccard"><div class="k">核心判断</div><div class="v">合资的危机是结构性的——机会不在追逐增量，而在承接自己的存量</div></div>
+      <div class="ccard"><div class="k">主攻客户</div><div class="v">存量置换升级客户（A1），让老客户的第一台新能源车仍然选择该品牌</div></div>
+      <div class="ccard"><div class="k">盈利架构</div><div class="v">置换全案闭环（客户解决方案）＋服务利润池（装机基础）</div></div>
+    </div>
+    <div class="bottom">
+      <div class="meta">
+        <div class="m">汇报对象<b>某汽车公司管理团队</b></div>
+        <div class="m">覆盖范围<b>中国乘用车市场 · 单一品牌</b></div>
+        <div class="m">数据基准<b>2019–2026H1 · Evidence ID 回追溯源</b></div>
+        <div class="m">设计方法<b>VDBD 价值驱动业务设计</b></div>
+      </div>
+      <div class="hint">PRESS → 开始</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S2 执行摘要 · 核心判断 ============ -->
+<section class="screen" data-ch="01" data-title="核心判断">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">执行摘要 · 核心判断</h2>
+    <p class="s-sub">利润池迁移下的结构性转型判断——机会不在追逐增量，而在承接自己的存量。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="callout dark">
+        <span class="lead">核心判断</span>
+        利润池正从「整车制造＋传统动力」迁入「电池＋智能化＋服务后市场」，合资的危机是<b>结构性而非周期性</b>；某汽车公司唯一不可复制的起手是 <b>3000 万保有客户基盘与千店渠道</b>，因此环节选择以<b>新能源整车为门户、服务后市场为价值捕获层</b>，客户选择锚定<b>存量置换升级客户</b>，以「德系品质的确定性 × 新能源动力的满足感 × 存量置换的便利性」的<b>第三种身份</b>重建价值主张，盈利模式以「<b>置换全案闭环＋服务利润池</b>」为价值获取架构，通过承接存量而非追逐增量重建增长与品牌势能。
+      </div>
+      <div class="grid grid-4" style="margin-top:18px;height:auto;align-content:start">
+        <div class="card kpi">
+          <div class="num">200.18<span>万→</span>102.4<span>万辆</span></div>
+          <div class="lbl">销量（2019 高峰 → 2025），腰斩式下滑</div>
+          <div><span class="tag">E82</span><span class="tag">E03</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">−31.2<span>%</span></div>
+          <div class="lbl">2026H1 销量同比，下滑仍在加速</div>
+          <div><span class="tag">E82</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">≈30<span>%</span></div>
+          <div class="lbl">合资市占率（自近 60% 萎缩），自主全面反超</div>
+          <div><span class="tag">E03</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="num">81.2<span>%</span></div>
+          <div class="lbl">燃油车用户把新能源作为置换首选，存量在迁移</div>
+          <div><span class="tag">E59</span></div>
+        </div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">利润池正在迁移</div><div class="fd">行业利润率 4.1%→3.4% · 量增利薄</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">整车制造 ＋ 传统动力</div><div class="fd">内燃机时代最核心的动力总成利润池已被拿走（E27）</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">动力电池 ＋ 智能化 ＋ 服务后市场</div><div class="fd">电池利润池 700–1200 亿（E21）· 新能源维保价值重构（E42）</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S3 执行摘要 · 战略背景 ============ -->
+<section class="screen" data-ch="01" data-title="战略背景">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">战略背景</h2>
+    <p class="s-sub">本报告面向的委托主体、行业语境、战略诉求与核心痛点。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto">
+      <div class="card">
+        <div class="kicker">委托主体 · Company</div>
+        <div class="card-title">某汽车公司</div>
+        <div class="card-body">某跨国汽车集团与中方股东合资企业，聚焦<b>单一该品牌</b>（不含低端子品牌等子品牌）。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">行业语境 · Industry</div>
+        <div class="card-title">中国乘用车制造与价值链上下游</div>
+        <div class="card-body">燃油车与新能源并存的市场结构，合资车企阵营；利润池正从整车制造与传统动力迁向电池、智能化与服务后市场。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">战略诉求 · Mandate</div>
+        <div class="card-title">新能源转型与品牌认知重塑</div>
+        <div class="card-body">把业务重心从燃油基盘转向智能电动化，重构产品与技术路线、重塑品牌认知；<b>方向性蓝图</b>——允许平台共享、第三方合作与组织重组等重大举措，不设硬性量化承诺。</div>
+      </div>
+      <div class="card tint">
+        <div class="kicker">核心痛点 · Pain</div>
+        <div class="card-title">销量下滑、认知退化、转型未成势</div>
+        <div class="card-body">近三年销量严重下滑（2019 年高峰 200.18 万辆 → 2025 年 102.4 万辆、2026H1 同比 −31.2%）、品牌认知相对竞品退化、燃油基盘承压而新能源转型未形成新的增长与品牌势能。</div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">200.18 万辆</div><div class="fd">2019 销量高峰</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">102.4 万辆</div><div class="fd">2025 年 · 接近腰斩</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">−31.2%</div><div class="fd">2026H1 同比 · 下滑仍在加速</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">机会不在追逐增量</div><div class="fd">而在承接自己的存量——3000 万保有客户（E61）</div></div>
+      </div>
+    </div>
+</section>
+<!-- ============ S4 七项设计结论（一） ============ -->
+<section class="screen" data-ch="01" data-title="七项设计结论 · 一">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">七项设计结论（一）· 01–04</h2>
+    <p class="s-sub">VDBD 七步设计路径的前四项判断——市场扫描、客户选择、价值主张、盈利模式。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:18px;grid-auto-rows:auto">
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">01</span>
+        <div><div class="card-title">市场扫描</div>
+        <div class="card-body">中国乘用车市场已从「增量红利」切换为「存量再分配」：利润池从整车制造＋传统动力迁向<b>动力电池＋智能化＋服务后市场</b>，合资阵营的危机是结构性的——机会不在追逐增量，而在<b>承接自己的存量</b>。</div></div>
+      </div>
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">02</span>
+        <div><div class="card-title">客户选择</div>
+        <div class="card-body">主攻<b>「存量置换升级客户」</b>——市场吸引力高（81.2% 置换流向新能源＋升级置换 20 万+）且企业胜任权相对最强（3000 万保有客户＋千店渠道＋质量服务口碑），是极少数「被政策与产品力双重推到面前」的目标客群。</div></div>
+      </div>
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">03</span>
+        <div><div class="card-title">价值主张</div>
+        <div class="card-body">提供「<b>德系品质的确定性 × 新能源动力的满足感 × 存量置换的便利性</b>」——在「自主新能源」与「燃油合资」之间建立<b>第三种身份</b>，让老客户的第一台新能源车仍然选择该品牌。</div></div>
+      </div>
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">04</span>
+        <div><div class="card-title">盈利模式 / 价值获取</div>
+        <div class="card-body">从「卖车差价」重构为「<b>置换全案闭环</b>（客户解决方案）＋<b>服务利润池</b>（装机基础）」：新能源整车毛利为门户、燃油售后现金流为过渡资源、金融/二手车/延保为长期利润层；软件订阅仅作高端差异化标签而非收入来源。</div></div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">01 市场扫描</div><div class="fd">存量再分配</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">02 客户选择</div><div class="fd">承接存量客户</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">03 价值主张</div><div class="fd">第三种身份</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">04 盈利模式</div><div class="fd">置换全案＋服务利润池</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S4b 七项设计结论（二） ============ -->
+<section class="screen" data-ch="01" data-title="七项设计结论 · 二">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Executive Summary</span></div>
+    <h2 class="s-title">七项设计结论（二）· 05–07</h2>
+    <p class="s-sub">VDBD 七步设计路径的后三项判断——活动范围、战略控制、风险管理。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:18px;grid-auto-rows:auto">
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">05</span>
+        <div><div class="card-title">活动范围</div>
+        <div class="card-body">做「承接存量」的<b>完整闭环</b>——新能源整车（插混/增程为主）＋渠道重构＋服务链条；不做「追逐增量」的硬仗——自研电池、自研智驾全栈、10 万以下价格战、30 万以上高端硬拼与短期出海。</div></div>
+      </div>
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">06</span>
+        <div><div class="card-title">战略控制</div>
+        <div class="card-body">四大不可复制控制点：<b>3000 万保有客户数据、千店渠道与服务口碑、该品牌资产、燃油现金流</b>——构成「把存量控制点资产转化为增量控制点时间」的护城河；智驾/平台能力通过合作锁定而非自建。</div></div>
+      </div>
+<div class="card concl" style="flex-direction:row;align-items:flex-start;gap:18px">
+        <span class="ch-num" style="flex:0 0 auto">07</span>
+        <div><div class="card-title">风险管理</div>
+        <div class="card-body">最大战略风险不是「转得慢」，而是「<b>用燃油利润惯性补贴新能源、却因规模不足无法形成正循环</b>」——需股东双方对 3–5 年盈利容忍度做出承诺，并在三重时间压力下守住 2026–2027 窗口。</div></div>
+      </div>
+    </div>
+        <div class="callout">
+        <span class="lead">一句话总结</span>
+        以「承接存量」重建增长与品牌势能——不是追逐增量，而是把 3000 万存量客户重新「接住」：新能源整车为门户、服务后市场为价值捕获层、燃油基盘为现金流与时间、四大控制点守利润，并在三重时间压力下守住 2026–2027 窗口。
+      </div>
+    </div>
+</section>
+<!-- ============ S5 研究范围与证据口径 ============ -->
+<section class="screen" data-ch="01" data-title="研究范围与证据口径">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Scope &amp; Evidence</span></div>
+    <h2 class="s-title">研究范围与证据口径</h2>
+    <p class="s-sub">本报告所有观点均可回溯至底层数据结构，保证结论可验证、可复核。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="callout">
+        <span class="lead">证据口径</span>
+        本报告的业务观点、数字、事实、估算、假设和数据缺口均来自当前 <strong>business_design.json</strong>；各章节通过 <strong>Evidence IDs</strong> 与 <strong>Assumption IDs</strong> 保留回溯关系，任一结论均可追至原始证据。
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:16px;min-height:0">
+        <div class="card">
+          <div class="kicker">Evidence · 证据回溯</div>
+          <div class="kpi"><div class="num">76<span>项</span></div></div>
+          <div class="card-body" style="font-size:14px">E01–E100 编号体系，市场、客户、竞争、能力、窗口、对手六大类证据全程引用（如 E61 保有客户、E82 销量、E90 产品计划）。</div>
+        </div>
+        <div class="card">
+          <div class="kicker">Assumption · 假设回溯</div>
+          <div class="kpi"><div class="num">A01<span>–</span>A10</div></div>
+          <div class="card-body" style="font-size:14px">方向性假设独立编号，凡无公开数据支撑的判断均显式标注为假设，并配验证计划与数据缺口清单。</div>
+        </div>
+        <div class="card">
+          <div class="kicker">数据源 · Source</div>
+          <div class="card-body" style="font-size:14.5px;margin-top:6px">当前 <strong>business_design.json</strong>；本 HTML 由其自动生成的 Markdown 转换而来，正式内容以 JSON 为准。</div>
+          <div><span class="tag">do-not-edit</span></div>
+        </div>
+        <div class="card">
+          <div class="kicker">生成指纹 · Fingerprint</div>
+          <div class="card-body" style="font-family:var(--mono);font-size:12px;line-height:1.8;word-break:break-all;margin-top:6px">源文件指纹保留于内部测试记录，公开展示版不提供。</div>
+        </div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">01 市场扫描</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">02 客户选择</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">03 价值主张</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">04 盈利模式</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">05 活动范围</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">06 战略控制</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">07 风险管理</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S6 关键假设与验证计划 ============ -->
+<section class="screen" data-ch="01" data-title="关键假设与验证计划">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">01</span><span class="ch-name">Assumptions &amp; Validation</span></div>
+    <h2 class="s-title">关键假设与验证计划</h2>
+    <p class="s-sub">十项关键假设决定设计成立与否——每项均给出影响链路与验证方法。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="card-title"><span class="idx">A01</span>存量客户信任可转化</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>「存量承接」主路径的前提，若信任崩解则 3000 万基盘无法转化。<br><strong>验证：</strong>NPS 分群调研＋2026–2027 置换试点转化率，对照 81.2% 行业置换流向。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A02</span>插混/增程为承接主力形态</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>决定产品路线；若纯电成为主流而插混供给不及将再次踏空。<br><strong>验证：</strong>跟踪插混/增程渗透率与合资插混销量；置换调研验证形态偏好。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A03</span>新平台降本 40% 可实现</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>单车单位经济性的生死线——电池外的唯一系统性降本抓手。<br><strong>验证：</strong>新平台 量产车 BOM 拆解对比；首款 新平台纯电上市后单车毛利披露。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A04</span>智驾供给按期「智能达标」</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>决定 2026–2027 产品力窗口；智驾是核心购车决策要素（L2+ 渗透率 67.6%）。<br><strong>验证：</strong>外部智驾供应商城市 NOA 可用性/满意度测试；供应商交付里程碑跟踪。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A05</span>燃油售后现金流可持续反哺</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>决定「靠燃油养转型」的资源来源；若基盘萎缩快于爬坡则现金流断档。<br><strong>验证：</strong>季度监测燃油保有量、售后产值与新能源维保收入占比。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A06</span>2026–2027 购置税窗口可承接</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>窗口期出货决定爬坡斜率；退坡后考验产品力而非政策红利。<br><strong>验证：</strong>按月跟踪购置税窗口期销量与退坡前后需求变化。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A07</span>保有客户数据可触达可转化</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>决定存量承接业务上限；无精确触达则存量优势无法货币化。<br><strong>验证：</strong>3000 万客户数据建模试点，建立可触达率/置换意向率基线。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A08</span>单车净利 5000–7000 元可维持</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>约束盈利测算量级；若价格战压至零必须更快转向服务。<br><strong>验证：</strong>季度单车净利与行业对标；新平台 落地后实际单车毛利。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A09</span>出口/海外短期不计入盈利</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>防止把海外溢价计入盈利模式；测算仅基于中国市场。<br><strong>验证：</strong>合资出海战略明确前不设海外收入假设。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">A10</span>股东双方承诺 3–5 年盈利容忍度</div>
+        <div class="card-body" style="font-size:14px"><strong>影响：</strong>决定转型投入的资源上限与节奏；保盈利优先将错失窗口。<br><strong>验证：</strong>合资治理层对投入预算与 3–5 年盈亏平衡时间表的书面确认。</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S7 市场扫描 · 五看分析 ============ -->
+<!-- ============ S8 五看分析（一） ============ -->
+<section class="screen" data-ch="02" data-title="五看分析 · 一">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · 五看</span></div>
+    <h2 class="s-title">市场扫描 · 五看分析（一）· 行业 / 市场 / 竞争</h2>
+    <p class="s-sub">从行业趋势、市场与客户、竞争格局三看「利润池迁移」与「存量再分配」的结构性图景。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="card-title"><span class="idx">看一</span>行业趋势：量增利薄，利润池系统性迁移</div>
+        <div class="card-body" style="font-size:13.5px">2025 年汽车产销 3453.1 万 / 3440 万辆、乘用车首破 3000 万辆，但行业利润率跌至 <strong>4.1%</strong> 历史低位、2026 年 1–5 月进一步降至 <strong>3.4%</strong>。电池环节利润池约 700–1200 亿元（可达整车行业利润 15%–26%），内燃机时代主机厂最核心的动力总成利润池已被拿走；下游燃油售后利润池重构（新能源单车维保价值降 30%–34%）。新能源零售渗透率 2025 年约 54.1%、2026 年 6 月达 62.8%；合资品牌新能源渗透率仅 11.9%，相对自主 81.8% 是数量级差距。</div>
+        <div><span class="tag">E01</span><span class="tag">E02</span><span class="tag">E21</span><span class="tag">E27</span><span class="tag">E04</span><span class="tag">E07</span><span class="tag">E08</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">看二</span>市场与客户：增换购驱动，置换即迁移</div>
+        <div class="card-body" style="font-size:13.5px">市场已从首购驱动切换为增换购驱动：2025 年置换用户比例突破 <strong>60%</strong>、<strong>81.2%</strong> 燃油车用户把新能源作为置换首选，且置换伴随消费升级（置换后新车 20 万+ 占 74.1%、20–30 万成主流区间）。决策要素排序为安全/续航/价格，仅 13.25% 愿为智能化支付溢价——「高关注、低支付、低信任」并存。两家合资车企保有量合计超 2000 万辆，某汽车公司自身积累超 <strong>3000 万保有客户</strong>，正进入集中换购期。</div>
+        <div><span class="tag">E58</span><span class="tag">E59</span><span class="tag">E60</span><span class="tag">E62</span><span class="tag">E61</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="idx">看三</span>竞争格局：自主反超，合资守成</div>
+        <div class="card-body" style="font-size:13.5px">自主市占率从 2020 年 38.4% 升至 2025 年接近 <strong>70%</strong>、合资从近 60% 萎缩至约 30%；10–20 万主力价格带自主份额 65.2%、比亚迪占 19.2%。盈利路径清晰分化——垂直整合（比亚迪）、出海（奇瑞）、高端化（赛力斯）、极致降本（零跑）；合资已无「增长型」玩家、只有「守住型」玩家。城市 NOA 第三方供应商高度集中（Momenta 60.2%、华为 HI 20.6%），软件订阅在中国难以兑现收入。</div>
+        <div><span class="tag">E03</span><span class="tag">E53</span><span class="tag">E55</span><span class="tag">E68</span><span class="tag">E70</span><span class="tag">E76</span><span class="tag">E25</span><span class="tag">E98</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S8b 五看分析（二） ============ -->
+<section class="screen" data-ch="02" data-title="五看分析 · 二">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · 五看</span></div>
+    <h2 class="s-title">市场扫描 · 五看分析（二）· 自身 / 窗口</h2>
+    <p class="s-sub">自身能力「存量控制点强势、增量控制点缺失」与机会窗口「2026–2027 为界、空白恰在射程内」两看。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="card-title"><span class="idx">看四</span>自身能力：存量控制点强势，增量控制点缺失</div>
+        <div class="card-body" style="font-size:13.5px">销量从 2019 年高峰 200.18 万辆降至 2025 年 102.4 万辆、2026H1 同比 <strong>−31.2%</strong>；燃油三王牌（主流轿车超 27 万/商务轿车近 23.4 万/主力SUV超 20.3 万）仍是现金流支柱，智能化燃油产品线零售近 12.2 万辆、<strong>+220%</strong> 验证「燃油＋智能化」可行。但新能源失速——纯电车型家族 2024 年 13.02 万辆合资纯电第一、2025 年 纯电主力车型 腰斩至 3.87 万辆；产能利用率跌至约 <strong>38%</strong>；智驾/座舱依赖外部智驾供应商、小鹏、中科创达等外部供给。</div>
+        <div><span class="tag">E82</span><span class="tag">E84</span><span class="tag">E85</span><span class="tag">E86</span><span class="tag">E88</span><span class="tag">E90</span></div>
+      </div>
+      <div class="card g-span-2">
+        <div class="card-title"><span class="idx">看五</span>机会窗口：2026–2027 为界，空白恰在射程内</div>
+        <div class="card-body" style="font-size:13.5px">窗口正在收窄：新平台 平台目标降本 40%、2026 年两款紧凑级纯电投放，外部智驾供应商全场景高阶智驾 2026 年 Q3 起上车、新电子电气架构 2026 年起应用，7 款新能源新品密集投放；购置税减半红利 2027 年底到期、以旧换新补贴持续助推置换。真正未被满足的空白是：<strong>10–25 万价位带、具备合资可靠性＋服务体系、智能化达标的新能源产品</strong>，以及对对该品牌有历史忠诚度的存量客户升级置换承接（插混/增程形态）——这个位置恰好落在某汽车公司存量控制点射程内。</div>
+        <div><span class="tag">E90</span><span class="tag">E47</span><span class="tag">E49</span><span class="tag">E55</span><span class="tag">E61</span><span class="tag">E64</span></div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">看四 · 自身能力</div><div class="fd">存量控制点强势（3000 万客户 / 千店 / 口碑）· 增量控制点缺失（新能源 4.5%）</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">看五 · 机会窗口</div><div class="fd">10–25 万「合资可靠性＋服务＋智能达标」空白，恰在存量控制点射程内</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S8 市场扫描 · 政策窗口 ============ -->
+<section class="screen" data-ch="02" data-title="政策窗口">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Policy</span></div>
+    <h2 class="s-title">市场扫描 · 政策窗口</h2>
+    <p class="s-sub">六个政策变量叠加形成 2026–2027 的确定性窗口，也构成退坡后的时间压力。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-3" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">政策窗口 1 · E47</div>
+        <div class="card-title">购置税退坡</div>
+        <div class="card-body" style="font-size:14.5px">2024–2025 免征（单车 ≤3 万）、2026–2027 减半（单车 ≤1.5 万）、<strong>2027 年底到期</strong>；2024–2027 减免总额约 5200 亿元。2026–2027 是政策红利最后的确定性窗口。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">政策窗口 2 · E48</div>
+        <div class="card-title">双积分硬约束</div>
+        <div class="card-body" style="font-size:14.5px">新能源积分比例要求提升至 2026 年 <strong>48%</strong>、2027 年 <strong>58%</strong>；2025 年 87 家境内车企中 19 家双积分为负、其中 17 家为合资/进口，插混积分降至 0.5 分，合规成本持续侵蚀利润表。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">政策窗口 3 · E49</div>
+        <div class="card-title">以旧换新</div>
+        <div class="card-body" style="font-size:14.5px">2025 年超 1150 万辆、带动新车销售额超 1.6 万亿元；2026 年报废换新能源补贴 12% 最高 2 万、置换新能源 8% 最高 1.5 万——政策落点与置换潮高度重合，相当于政策在替车企「搬」燃油基盘客户。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">政策窗口 4 · E50</div>
+        <div class="card-title">L3 准入</div>
+        <div class="card-body" style="font-size:14.5px">2025 年 12 月工信部公布首批 L3 级准入许可、两款车型在北京重庆试点——商业化节奏决定高阶智驾价值兑现速度。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">政策窗口 5 · E51</div>
+        <div class="card-title">国七排放</div>
+        <div class="card-body" style="font-size:14.5px">预计 2026–2027 完成制定、2028 试点、2029–2030 全国实施，显著提高燃油车发动机与后处理成本——对燃油基盘利润构成<strong>第二次挤压</strong>，加速弱势企业出清。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">政策窗口 6 · E52</div>
+        <div class="card-title">新能源下乡</div>
+        <div class="card-body" style="font-size:14.5px">五年来累计销售近 1500 万辆，托底下沉市场，契合新能源客户下沉化趋势。</div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">2026</div><div class="fd">购置税减半 · 双积分 48% · 以旧换新加码 · L3 试点</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">2027 底</div><div class="fd">购置税红利到期 · 双积分 58% · 国七制定完成</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">窗口结论</div><div class="fd">2026–2027 是政策红利最后的确定性窗口</div></div>
+      </div>
+    </div>
+</section>
+<!-- ============ S9 竞争格局 A ============ -->
+<section class="screen" data-ch="02" data-title="竞争格局 A">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Competition</span></div>
+    <h2 class="s-title">竞争格局（一）· 头部玩家</h2>
+    <p class="s-sub">自主五大盈利路径标杆——规模、出海、高端、极致降本四路分化。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">比亚迪</div>
+          <span class="badge enter">垂直整合 · 规模</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">2025 年销量 <strong>460.24 万辆</strong>、净利 326.19 亿（−18.97%）、新能源市占率 27.9%、海外 105 万辆；电池成本低约 <strong>20%</strong>、智驾硬件压至 3000 元级、主导 10–20 万价格带（占 19.2%）。盈利路径为「<strong>垂直整合吃制造成本红利</strong>」。</div>
+        <div><span class="tag">E68</span><span class="tag">E33</span><span class="tag">E14</span><span class="tag">E55</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">吉利</div>
+          <span class="badge enter">多品牌 · 放量</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">销量 302.5 万辆（上市口径）、新能源 <strong>168 万辆（+90%）</strong>、银河 124 万辆（+150%）、净利 144.1 亿（+36%）——多品牌矩阵＋插混放量。</div>
+        <div><span class="tag">E69</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">奇瑞</div>
+          <span class="badge enter">出海 · 高毛利</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">出口 <strong>129.44 万辆</strong>、海外收入占比 <strong>52.4%</strong>、净利率 6.5%、新能源 82.65 万辆（+72.5%）——出海标杆，路径对中方股东不具复制性。</div>
+        <div><span class="tag">E70</span><span class="tag">E16</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">零跑</div>
+          <span class="badge defend">极致降本 · 薄利</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">2025 年交付 <strong>59.66 万辆</strong>、归母净利 5.4 亿首次年度盈利、单车净利约 <strong>900 元</strong>、约 70% 渠道为经销商——「极致降本吃规模」，与该品牌同处 10–20 万价格带但不冲突。</div>
+        <div><span class="tag">E76</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">赛力斯 / 问界</div>
+          <span class="badge enter">高端智能</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">问界交付 <strong>42.6 万辆</strong>、成交均价升至 <strong>39.1 万元</strong>、高端新能源 SUV 市占率超 20%——直接侵蚀传统豪华与合资高端，是某汽车公司「30 万以上不做硬拼」的边界参照。</div>
+        <div><span class="tag">E78</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S10 竞争格局 B ============ -->
+<section class="screen" data-ch="02" data-title="竞争格局 B">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">02</span><span class="ch-name">Market Scan · Competition</span></div>
+    <h2 class="s-title">竞争格局（二）· 新势力与合资参照</h2>
+    <p class="s-sub">新势力盈利拐点、合资分化样本与集团自身在华处境。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">理想</div>
+          <span class="badge defend">家庭增程 · 细分标杆</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">2025 年营收 1123 亿（<strong>−22.3%</strong>）、首次经营亏损 5.21 亿；增程赛道竞争加剧，但「家庭增程」心智仍强。</div>
+        <div><span class="tag">E73</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">蔚来 / 小鹏 / 小米</div>
+          <span class="badge observe">新势力 · 盈利拐点</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">蔚来全年净亏 149.43 亿但 Q4 首次单季盈利；小鹏交付 42.94 万辆、Q4 盈利；小米年交付超 41 万辆、首年转正——共同规律是<strong>规模突破后盈利拐点出现</strong>，但单车净利仍远低于头部自主。</div>
+        <div><span class="tag">E74</span><span class="tag">E75</span><span class="tag">E77</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">另一合资车企</div>
+          <span class="badge defend">直接参照 · 合资第一</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">2025 年 <strong>158.71 万辆</strong>仍合资第一（该品牌 90.21 万/奥迪 56.7 万/低端车型 11.8 万），靠奥迪高端＋低端车型下沉＋燃油基盘维持，与某汽车公司差距已拉大至 <strong>55% 以上</strong>。</div>
+        <div><span class="tag">E80</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">广汽 / 另一合资车企</div>
+          <span class="badge observe">合资分化样本</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">广汽 2025 年归母净利 <strong>−87.84 亿</strong>由盈转亏；另一合资车企 53.5 万辆（+22.99% 低基数）、新能源约 8.9 万辆居合资第一、<strong>连续 5 季盈利</strong>，推行「一口价」渠道与别克至境高端新能源子品牌。</div>
+        <div><span class="tag">E79</span><span class="tag">E81</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">集团（中国）</div>
+          <span class="badge avoid">在华最弱市场</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">2025 年在华交付约 269 万辆（−8%）、新能源约 12 万辆占 <strong>4.5%</strong>、跌回 2021 年水平；在华合资权益法收益三年缩水超 60%（26.21 → 9.58 亿欧元）；全球营业利润 89 亿欧元（−53%）、销售回报率 2.8%——中国是集团电动化的<strong>「最弱市场」</strong>。</div>
+        <div><span class="tag">E86</span><span class="tag">E87</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S11 客户选择 · 当前定位评估 ============ -->
+<section class="screen" data-ch="03" data-title="当前定位评估">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection</span></div>
+    <h2 class="s-title">客户选择 · 当前定位评估</h2>
+    <p class="s-sub">某汽车公司当前深度绑定在「利润正在流出」的环节——必须向新能源整车与服务后市场双迁移。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-rows" style="grid-template-rows:auto auto">
+      <div style="display:flex;gap:18px">
+        <div class="card" style="flex:1.2">
+          <div class="kicker">当前环节 · 定位</div>
+          <div class="card-title">中游 · 整车制造（燃油车为主）</div>
+          <div class="card-body" style="font-size:14.5px">收入体量最大但<b>利润率最低</b>的环节——行业净利率 4.1%，利润池被价格战与成本结构双重挤压。合资市占率自近 60% 萎缩至约 30%，2026H1 销量 −31.2%。若继续在旧利润池内深耕，<b>利润池本身在萎缩</b>。</div>
+        </div>
+        <div class="card tint" style="flex:1">
+          <div class="kicker">迁移方向 · 双迁移</div>
+          <div class="card-title">新能源整车（承接入口）＋服务后市场（价值捕获层）</div>
+          <div class="card-body" style="font-size:14.5px">以新能源整车为门户承接 3000 万存量客户，以服务后市场作为价值捕获层兑现长期利润——这是「承接存量」系统的两个支点。</div>
+        </div>
+      </div>
+      <div class="callout dark" style="align-self:stretch">
+        <span class="lead">评估结论</span>
+        某汽车公司当前深度绑定在「利润正在流出」的环节：燃油整车制造收入体量巨大（主流轿车/商务轿车/主力SUV仍是现金流支柱），但单车净利空间被压至「规模生存线」（行业 5000–7000 元、合资部分车型毛利率跌破 8%），且传统动力利润池已被电池/智能化拿走。<b>必须同时向「新能源整车」与「服务后市场」迁移。</b>
+        <div style="margin-top:10px"><span class="tag">E84</span><span class="tag">E32</span><span class="tag">E100</span><span class="tag">E27</span><span class="tag">E03</span><span class="tag">E82</span></div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">当前 · 旧利润池</div><div class="fd">燃油整车制造 · 利润率最低（净利率 4.1%）</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">门户 · 新能源整车</div><div class="fd">承接 3000 万存量的入口（插混/增程为主）</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">捕获层 · 服务后市场</div><div class="fd">维保 1.0–1.2 万亿 ＋ 二手车 1.29 万亿</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S12 环节评估 · 六维评分总览 ============ -->
+<section class="screen" data-ch="03" data-title="环节评估 · 六维评分">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Scoring</span></div>
+    <h2 class="s-title">环节评估 · 六维评分总览</h2>
+    <p class="s-sub">六个候选环节按「市场吸引力 55% × 企业胜任权 45%」加权评分（1–5 分制）。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-3" style="grid-auto-rows:auto;gap:18px">
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">① 整车制造·新能源</div>
+          <span class="badge enter">进入扩张</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.35</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 主环节</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.70 · EF 1.65</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">② 整车制造·燃油车</div>
+          <span class="badge defend">防守</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.90</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 当前基盘</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.10 · EF 1.80</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">③ 下游·经销与零售</div>
+          <span class="badge expand">扩张</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.50</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 捕获层</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.65 · EF 1.85</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">④ 下游·服务后市场</div>
+          <span class="badge expand">扩张</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">3.50</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 价值捕获层</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.85 · EF 1.65</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">⑤ 上游·动力电池</div>
+          <span class="badge avoid">放弃自主进入</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.55</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 垫底</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">4</span><span class="bar-track"><span class="bar-fill" style="width:80%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">1</span><span class="bar-track"><span class="bar-fill" style="width:20%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.95 · EF 0.60</div>
+      </div>
+      <div class="card score">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="card-title" style="font-size:15.5px">⑥ 上游·智能化</div>
+          <span class="badge partner">合作</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:800;color:var(--brand-100)">2.75</span><span style="font-size:13px;color:var(--ink-3)">加权分 · 合作而非自研</span></div>
+        <div class="bar-row"><span class="bl">利润池规模</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">增长与价值迁移</span><span class="bv">5</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></div>
+        <div class="bar-row"><span class="bl">竞争吸引力</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">能力匹配</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div class="bar-row"><span class="bl">业务协同</span><span class="bv">3</span><span class="bar-track"><span class="bar-fill" style="width:60%"></span></span></div>
+        <div class="bar-row"><span class="bl">可行性与风险</span><span class="bv">2</span><span class="bar-track"><span class="bar-fill" style="width:40%"></span></span></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">MA 1.70 · EF 1.05</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S13 环节评估详解 A ============ -->
+<section class="screen" data-ch="03" data-title="环节评估详解 A">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Detail</span></div>
+    <h2 class="s-title">环节评估详解（一）· 环节 1–3</h2>
+    <p class="s-sub">评分理由与总体评估——为什么新能源整车是门户、燃油是防守、渠道要扩张。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:13px;grid-auto-rows:auto">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">① 中游·整车制造·新能源（插混/增程为主＋纯电补充，15–25 万主力价格带）</div>
+          <span class="badge enter">进入扩张 · 战略门户</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>整车环节收入 11.18 万亿但净利率仅 4.1%、单车净利天花板 5000–7000 元，体量大利润薄（3）；新能源渗透率 54%→62.8%、政策三重助推，价值持续迁入（4）；10–20 万价格带自主占 65.2%、合资近乎从零起步（2）；有 既有平台/新平台 平台但电池智驾依赖外部、新平台降本 40% 待验证（3）；3000 万保有客户＋千店渠道＋燃油现金流高度协同（5）；外部供给集中交付但节奏风险（3）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 enter-expand。它不是得分最高的环节（3.35 &lt; 3.50），但它是「承接存量」整个价值链的<b>网关</b>——赢下该环节才能捕获下游服务利润池，按 VDBD 系统逻辑列为推荐主环节。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">② 中游·整车制造·燃油车（当前基盘）</div>
+          <span class="badge defend">防守</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>仍贡献主流轿车/商务轿车/主力SUV三张现金王牌（3）；燃油车产量三年累计降超 9%、购置税退坡与国七双重挤压、动力总成利润迁出（1）；合资市占率萎缩至 30%（2）；这是某汽车公司最擅长的环节——品牌/制造/渠道全栈（5）；燃油现金流是「靠燃油养转型」的资源来源（4）；长期收缩不可逆、越拖资源越少（2）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 defend——不作为增长引擎，作为过渡期现金流与客户关系维护的基盘；用 智能化燃油产品线验证的「燃油＋智能化」延缓流失，把燃油业务定位为「转型的现金流与时间」而非长期业务。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">③ 下游·经销与零售（渠道重构）</div>
+          <span class="badge expand">扩张</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>渠道利润已从新车价差转向售后（80.8%）与金融保险（36.2%）（3）；批零价差模式衰竭——81.9% 价格倒挂、新车毛利 −25.5%，「订单制＋低库存＋服务收入」的新能源渠道可盈利（3）；全国 4S 网络收缩但新能源代理模式被验证（3）；千店渠道（该品牌突破 1000 家）但 新能源直营店 从 154 家锐减至 58 家暴露新能源触点短板（4）；渠道是承接置换的第一触点，与 3000 万基盘高度协同（5）；经销商满意度 60.8 分创新低、重构需投入与利益再分配（3）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 expand——按「主机厂控价、经销商服务」的融合方向重构：一口价透明购车保护新车毛利，经销商盈利从批零价差转向服务佣金；在 15–25 万主力价格带恢复新能源网点密度。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S14 环节评估详解 B ============ -->
+<section class="screen" data-ch="03" data-title="环节评估详解 B">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Detail</span></div>
+    <h2 class="s-title">环节评估详解（二）· 环节 4–6</h2>
+    <p class="s-sub">服务后市场是价值捕获层；电池与智能化一个放弃、一个合作。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;gap:13px;grid-auto-rows:auto">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">④ 下游·服务后市场（售后维保＋二手车＋金融保险）</div>
+          <span class="badge expand">扩张 · 价值捕获层</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>多个万亿级下游池叠加——售后维保 1.0–1.2 万亿、二手车约 1.29 万亿、汽车金融约 3 万亿、新能源车险保费 1900 亿（4）；燃油高毛利维修项目随电动化消失，但电池检测/二手车评估/延保等新服务增长，总量平稳、结构重构（3）；新能源维保/二手车服务竞争相对分散，传统 4S 售后仍是业绩支柱（3）；有服务网络与 3000 万保有客户，但电池检测等专业能力需建设或合作（3）；与燃油基盘＋置换链条高度协同（5）；新服务能力投入周期长、二手车/金融环节需控制风险（3）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 expand——把「售后＋金融＋二手车＋延保」建成过渡期现金流与长期利润池；依赖先赢下「新能源整车」形成客户闭环，故不是独立入口而是主环节的协同层。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">⑤ 上游·动力电池</div>
+          <span class="badge avoid">放弃自主进入</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>电池环节利润池 700–1200 亿、可达整车利润 15%–26%、龙头净利率约 17%（5）；装车量 +40.4% 但价格累计降 40%、利润向头部二次集中（4）；CR2 约 65% 高度集中、宁德/弗迪垄断（1）；某汽车公司无电池产能/技术、垂直整合不可能（1）；仅作为供应商关系存在（2）；巨额投入、进入时点过晚，与合资架构及保盈利约束冲突（1）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 avoid——市场吸引力最高（1.95）但企业胜任权垫底（0.60），是「<b>利润率最高 ≠ 最值得进入</b>」的典型反例；以长期供应商锁定与二供策略管理电池成本，不做自研。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">⑥ 上游·智能化（智驾域控＋智能座舱软硬件）</div>
+          <span class="badge partner">合作而非自建</span>
+        </div>
+        <div class="card-body" style="font-size:13.5px"><strong>评分理由：</strong>智驾域控仅 479.4 亿、智能座舱 1564 亿，体量尚小（2）；域控复合增速 109.9%、智驾已成核心购车决策要素（L2+ 渗透率 67.6%）（5）；城市 NOA 第三方供应商集中（Momenta 60.2%/华为 20.6%）、比亚迪把成本压至 3000 元级（2）；智驾依赖外部供给、无自研（2）；智驾是产品力达标的关键但只能以合作方式接入（3）；自主进入不现实，外部智驾供应商 2026 年 Q3 上车是唯一现实路径（2）。</div>
+        <div class="card-body" style="font-size:13.5px;background:var(--brand-08);border-radius:6px;padding:10px 12px"><strong>总体评估：</strong>建议决策 partner——通过外部智驾供应商/小鹏/中科创达的外部供给实现「智能达标」，把智驾作为标配而非收费项（软件订阅在中国不可依赖），不建自研全栈。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S15 推荐环节 ============ -->
+<section class="screen" data-ch="03" data-title="推荐环节">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Decision</span></div>
+    <h2 class="s-title">推荐环节 · 系统组合</h2>
+    <p class="s-sub">以「新能源整车为门户、服务后市场为价值捕获层」的系统性环节组合。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="callout dark">
+        <span class="lead">推荐决策 · enter / expand</span>
+        推荐主环节是「新能源整车制造」（expand，总分 3.35），并联动「服务后市场」与「经销零售」（均 3.50）作为协同捕获层。<b>结论：以新能源整车（插混/增程为主）为战略门户，渠道与服务为捕获层，燃油基盘为防守，电池与智驾自研为放弃/合作。</b>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:16px;min-height:0">
+        <div class="card">
+          <div class="kicker">理由 1 · 门户逻辑</div>
+          <div class="card-body" style="font-size:14.5px">得分最高的两个下游环节（服务后市场/经销零售）本质上依赖「客户是否买某汽车公司的新能源车」——只有先赢下新能源整车（承接 3000 万存量的载体），下游服务利润池才可被捕获，因此它是整个「承接存量」系统的<b>门户</b>。</div>
+        </div>
+        <div class="card">
+          <div class="kicker">理由 2 · 胜任权相对最强</div>
+          <div class="card-body" style="font-size:14.5px">某汽车公司在该环节市场吸引力中规中矩（1.70）但企业胜任权相对自身最强（1.65，业务协同满分 5）——3000 万保有客户、千店渠道、质量服务口碑是自主与新势力都<b>无法复制的起手</b>。</div>
+        </div>
+        <div class="card">
+          <div class="kicker">理由 3 · 反例对照</div>
+          <div class="card-body" style="font-size:14.5px">环节选择刻意避开「利润率最高的电池环节」（吸引力 1.95 但胜任权 0.60，总分 2.55 垫底）——正好体现 VDBD「<b>利润率最高不等于最值得进入</b>」的核心判断。</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;font-size:14px;color:var(--ink-2)">
+        <span class="badge enter">获客门户 · 新能源整车（C01）</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge expand">渠道触点（C01/C03）</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge expand">服务变现（C02）</span><span style="color:var(--ink-3)">→</span>
+        <span class="badge partner">品牌放大器（C04）</span>
+        <span style="color:var(--ink-3);margin-left:8px">＋ C05 利润乘数（组合层）</span>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">新能源整车 3.35</div><div class="fd">门户 · enter-expand</div></div>
+        <div class="fnode"><div class="ft">经销零售 3.50</div><div class="fd">触点 · expand</div></div>
+        <div class="fnode"><div class="ft">服务后市场 3.50</div><div class="fd">捕获层 · expand</div></div>
+        <div class="fnode"><div class="ft">燃油车 2.90</div><div class="fd">防守 · defend</div></div>
+        <div class="fnode"><div class="ft">智能化 2.75</div><div class="fd">合作 · partner</div></div>
+        <div class="fnode"><div class="ft">动力电池 2.55</div><div class="fd">放弃 · avoid</div></div>
+      </div>
+    </div>
+</section>
+<!-- ============ S16 客户细分 ============ -->
+<section class="screen" data-ch="03" data-title="客户细分">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Segmentation</span></div>
+    <h2 class="s-title">客户细分</h2>
+    <p class="s-sub">六个客群全景——从存量主攻到下沉让出，选择即取舍。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-template-rows:auto auto">
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <span class="badge enter">主攻</span>
+        <span class="badge expand">次攻</span>
+        <span class="badge observe">观察</span>
+        <span class="badge avoid">不攻</span>
+        <span style="font-size:13.5px;color:var(--ink-3);align-self:center">攻击优先级标签</span>
+      </div>
+      <div class="table-wrap t-wrap-scroll">
+        <table>
+          <tr><th style="width:26%">客户细分</th><th>客户画像</th></tr>
+          <tr><td><strong>A1 · 存量存量车主 · 置换升级</strong></td><td>3000 万保有客户中，进入置换周期且以新能源为置换首选（81.2%）的燃油车主；置换伴随消费升级（置换后新车 20 万+ 占 74.1%、20–30 万为主流区间）；对该品牌质量/服务口碑有信任基础（IQS 219 PP100、CACSI 合资双冠），对智能化「观望」而非「极客」。</td></tr>
+          <tr><td><strong>A2 · 存量存量车主 · 家庭增购/二车</strong></td><td>存量存量车主家庭增购第二辆车（新能源），与 A1 共享客户数据与触达渠道，决策更受家庭使用场景（续航、空间）与便利性驱动；数量小于 A1 但转化成本低。</td></tr>
+          <tr><td><strong>B1 · 主流家庭 · 首购</strong></td><td>25–45 岁主流家庭首购，预算 11–20 万元（占 45.35%），与新能源主战场 15–20 万元价格带重合；82.04% 认为国产新能源有足够优势，对合资新能源品牌认知弱，是自主主导的存量竞争客群。</td></tr>
+          <tr><td><strong>B2 · 下沉市场 · 首购</strong></td><td>县域/三四五六线城市首购客户，受益于新能源下乡（累计近 1500 万辆），看重性价比与售后网点可达性；某汽车公司 新能源直营店 商超店正从下沉市场撤退（撤出 3 座四线/5 座五线），渠道触达处于收缩状态。</td></tr>
+          <tr><td><strong>C1 · 商务/公商务人群</strong></td><td>商务轿车/主力SUV级商务用车与公商务采购，商务轿车仍是 B 级燃油轿车第一；对品牌形象、可靠性与服务保障敏感，受比亚迪汉、问界等冲击。</td></tr>
+          <tr><td><strong>D1 · 他品牌存量增换购客户</strong></td><td>丰田/本田/自主品牌燃油车主置换时被该品牌吸引的增换购客户（品牌考虑集合中中国品牌比例升至 70%，跨品牌竞争激烈）；对对该品牌有历史好感或服务网络信任但忠诚度弱于 A1，是增量来源。</td></tr>
+        </table>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">主攻 · A1 置换升级</div><div class="fd">＋ C1 商务（细分较小）</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">次攻 · D1 他牌增换购</div><div class="fd">＋ A2 家庭增购</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">观察 · B1 家庭首购</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">不攻 · B2 下沉首购</div><div class="fd">主动让出 10 万以下价格战</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S17 高价值目标客户 ============ -->
+<section class="screen" data-ch="03" data-title="高价值目标客户">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Target</span></div>
+    <h2 class="s-title">高价值目标客户</h2>
+    <p class="s-sub">以财务健康度 × 需求增长性 × 企业胜任权排序的攻守矩阵。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:18px">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">A1 · 存量置换升级客户</div>
+          <span class="badge enter">主攻</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px">财务健康度与需求增长性俱佳：置换升级支付能力确定（20 万+ 占 74.1%）、增换购是市场基本盘、需求方向确定（81.2% 首选新能源）；且企业胜任权最强——该公司是唯一同时拥有客户数据（3000 万保有）、渠道（千店）、品牌信任（质量服务口碑）与燃油现金流的承接方。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">D1 · 他品牌存量增换购</div>
+          <span class="badge expand">次攻</span>
+        </div>
+        <div class="card-body" style="font-size:14px">需求增长性高（增换购主导）、财务健康度好，但品牌好感与信任弱于 A1；以「合资品质＋服务网络」的差异化争取，是主攻之外的增量补充。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">C1 · 商务/公商务人群</div>
+          <span class="badge enter">主攻 · 细分较小</span>
+        </div>
+        <div class="card-body" style="font-size:14px">商务轿车 B 级燃油第一的既有强势位，商务采购对可靠性敏感、品牌形象要求高；新能源化商务车（插混/增程商务轿车级）可承接升级，财务健康度高。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">B1 · 主流家庭首购</div>
+          <span class="badge observe">次攻 / 观察</span>
+        </div>
+        <div class="card-body" style="font-size:14px">需求增长性高但购买偏好明显在自主一侧（82.04% 认为国产足够、10–20 万自主占 65.2%）；某汽车公司在此客群胜任权弱，仅作观察与品牌年轻化触点，不作为主攻。</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">B2 · 下沉市场首购</div>
+          <span class="badge avoid">不攻</span>
+        </div>
+        <div class="card-body" style="font-size:14px">下沉首购以极致性价比与渠道密度取胜，自主成本优势不可撼动且某汽车公司下沉触点正在收缩；主动放弃，避免与自主在 10 万以下打价格战。</div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">A1 置换升级 · 主攻</div><div class="fd">胜任权最强</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">C1 商务 · 主攻</div><div class="fd">细分较小</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">D1 他牌 · 次攻</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">B1 首购 · 观察</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">B2 下沉 · 不攻</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S18 客户诉求与痛点 ============ -->
+<section class="screen" data-ch="03" data-title="客户诉求与痛点">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">03</span><span class="ch-name">Customer Selection · Needs</span></div>
+    <h2 class="s-title">客户诉求与痛点</h2>
+    <p class="s-sub">主攻客群的购买决策顾虑，即价值主张要回答的问题。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto;gap:18px">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">① A1（主攻）</div>
+          <span class="badge enter">主攻</span>
+        </div>
+        <div class="card-body" style="font-size:14.5px"><strong>诉求：</strong>需要「智能化达标＋德系可靠＋无需溢价」的新能源产品承接升级置换。<strong>痛点：</strong>担心纯电续航与智驾信任不足（仅 31% 常用、超四分之一不信任）、担心品牌在智能赛道掉队（该品牌集群认知被自主主导）、置换流程繁琐且保值率担忧（该品牌三年保值率 52.39% 已被自主反超）。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">② C1（主攻）</div>
+        <div class="card-body" style="font-size:14.5px"><strong>诉求：</strong>需要商务形象＋可靠性的新能源商务车。<strong>痛点：</strong>商务轿车智能化不足、预算被比亚迪汉/问界等竞品分流。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">③ A2（次攻）</div>
+        <div class="card-body" style="font-size:14.5px"><strong>诉求：</strong>需要家庭使用场景友好的第二辆新能源车。<strong>痛点：</strong>以旧换新/金融方案便利性、服务网点可达性。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">④ D1（次攻）</div>
+        <div class="card-body" style="font-size:14.5px"><strong>诉求：</strong>需要「合资品质＋服务网络」的确定性。<strong>痛点：</strong>对自主智驾标签的跟风焦虑与对合资智能落后的双重不信任。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">⑤ B1/B2（不攻/观察）</div>
+        <div class="card-body" style="font-size:14.5px"><strong>诉求：</strong>需要极致性价比与智驾平权。<strong>痛点：</strong>某汽车公司在该客群缺乏产品与成本竞争力，主动让出。</div>
+      </div>
+    </div>
+        <div class="callout">
+        <span class="lead">价值主张的回应</span>
+        对主攻客群的核心顾虑，价值主张以「德系品质的确定性 × 新能源动力的满足感 × 存量置换的便利性」作答——确定性对冲信任不足、满足感对冲品牌掉队焦虑、便利性对冲置换流程繁琐与保值率担忧。
+      </div>
+    </div>
+</section>
+<!-- ============ S19 价值主张 · 竞争对手方案 ============ -->
+<section class="screen" data-ch="04" data-title="竞争对手方案">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">04</span><span class="ch-name">Value Proposition</span></div>
+    <h2 class="s-title">价值主张 · 竞争对手方案</h2>
+    <p class="s-sub">竞对已建立「更便宜」与「更智能」的规模成本优势——这是不可正面取胜的两条战线。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr;grid-template-rows:auto auto">
+      <div class="table-wrap t-wrap-scroll">
+        <table>
+          <tr><th style="width:16%">竞争对手</th><th style="width:44%">提供方案</th><th>近期动作</th></tr>
+          <tr><td><strong>比亚迪</strong></td><td>10–20 万价格带全覆盖的新能源产品（秦/宋/汉等）＋智驾平权（天神之眼把城市 NOA 硬件压至 3000 元级），性价比＋三电垂直整合。</td><td>以「规模＋垂直整合」把电池成本压至行业低 20%、推动智驾从 30 万+ 下探为 15 万级标配，主导 10–20 万价格带（占 19.2%）。</td></tr>
+          <tr><td><strong>零跑</strong></td><td>10–20 万极致性价比新能源，经销商渠道为主（约 70%），2025 年首次年度盈利。</td><td>以「极致降本吃规模」路径实现单车净利约 900 元的薄利盈利，直接切中某汽车公司主力价格带。</td></tr>
+          <tr><td><strong>赛力斯/问界</strong></td><td>高端智能新能源（问界 M8/M9），成交均价 39.1 万元，华为智驾赋能。</td><td>以「高端智能」侵蚀传统豪华与合资高端，上探 30 万+ 市场（某汽车公司不做硬拼的价格带）。</td></tr>
+          <tr><td><strong>理想</strong></td><td>家庭增程 SUV，以「家庭场景＋增程无里程焦虑」建立标签。</td><td>2025 年营收 −22.3%、首现经营亏损，增程赛道竞争加剧但「家庭增程」心智仍强。</td></tr>
+          <tr><td><strong>吉利/奇瑞等自主</strong></td><td>多品牌＋插混放量（吉利银河 124 万辆 +150%）与出海高毛利（奇瑞海外收入 52.4%）。</td><td>在 10–20 万主力价格带以产品矩阵＋插混全覆盖挤压合资。</td></tr>
+        </table>
+      </div>
+    </div>
+        <div class="callout">
+        <span class="lead">竞争启示</span>
+        「更便宜」（比亚迪/零跑的成本规模）与「更智能」（华为/新势力智驾标签）两条战线均无法正面取胜——某汽车公司唯一差异化空间是「承接存量、提供确定性」。
+      </div>
+    </div>
+</section>
+
+<!-- ============ S20 价值主张 · 差异化 ============ -->
+<section class="screen" data-ch="04" data-title="差异化价值主张">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">04</span><span class="ch-name">Value Proposition</span></div>
+    <h2 class="s-title">差异化价值主张 · 第三种身份</h2>
+    <p class="s-sub">不拼「更便宜」与「更智能」，用「确定性」承接存量的信任资产。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1.25fr 1fr;grid-template-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">差异化主张 · The Proposition</div>
+        <div class="card-title">「置换全案」——让老客户的第一台新能源车仍然选择该品牌</div>
+        <div class="card-body" style="font-size:15px">对 A1 存量置换升级客户提供<b>「置换全案」</b>：插混/增程为主、智能化达标（外部智驾供应商供给）、德系品质与保值率兜底、以旧换新＋金融＋延保一站式打包的新能源换购方案。</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:700;color:var(--brand-100)">＋ 新增收益</div><div style="font-size:13.5px;color:var(--ink-2);margin-top:4px">更低使用成本＋智能达标体验</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:700;color:var(--brand-100)">＋ 避免损失</div><div style="font-size:13.5px;color:var(--ink-2);margin-top:4px">燃油资产贬值与购置税退坡的规避</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:700;color:var(--brand-100)">＋ 风险下降</div><div style="font-size:13.5px;color:var(--ink-2);margin-top:4px">质量口碑＋千店服务＋质保兜底</div></div>
+          <div style="background:#F3F5F7;border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:700;color:var(--ink-2)">− 切换成本</div><div style="font-size:13.5px;color:var(--ink-3);margin-top:4px">品牌惯性、对纯电/智驾的信任顾虑</div></div>
+        </div>
+        <div style="margin-top:10px"><span class="tag">E57</span><span class="tag">E90</span><span class="tag">E44</span><span class="tag">E49</span><span class="tag">E60</span></div>
+      </div>
+      <div class="card">
+        <div class="kicker">为什么是它 · The Why</div>
+        <div class="card-body" style="font-size:14.5px">
+          <p style="margin-bottom:10px">竞对（比亚迪/零跑）在<b>「性价比与智驾平权」</b>上已建立不可逾越的规模与成本优势，某汽车公司在「更便宜」与「更智能」两个维度都无法正面取胜。</p>
+          <p style="margin-bottom:10px">其唯一差异化空间是<b>「承接存量、提供确定性」</b>——用该品牌独有的质量口碑（IQS 219 PP100）、千店服务网络、3000 万保有客户数据与高端集群品牌资产，把「观望型」客户的信任顾虑转化为成交理由。</p>
+          <p>智能化燃油产品线已验证「燃油＋智能化」可行（零售 12.2 万辆 ＋220%），插混/增程规避纯电短板，「置换全案」把政策补贴与置换升级纳入一个低摩擦方案。</p>
+        </div>
+        <div><span class="tag">E66</span><span class="tag">E89</span><span class="tag">E61</span><span class="tag">E64</span><span class="tag">E84</span><span class="tag">E55</span><span class="tag">E14</span></div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">自主新能源</div><div class="fd">更便宜 · 更智能 · 极致性价比</div></div>
+        <div class="farr">↕</div>
+        <div class="fnode dk"><div class="ft">第三种身份</div><div class="fd">德系品质 × 新能源动力 × 置换便利</div></div>
+        <div class="farr">↕</div>
+        <div class="fnode"><div class="ft">燃油合资</div><div class="fd">可靠 · 守成 · 智能化掉队</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S21 盈利模式 · 利润模式库筛选 ============ -->
+<section class="screen" data-ch="05" data-title="利润模式库筛选">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Screening</span></div>
+    <h2 class="s-title">盈利模式 · 利润模式库筛选</h2>
+    <p class="s-sub">对 21 种盈利模式逐一过筛，5 种进入候选、8 类明确拒绝。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="kicker">筛选口径 · Mercer / Slywotzky</div>
+        <div class="card-body" style="font-size:14px">基于《利润模式》（Profit Patterns）/《发现利润区》<b>21 种盈利模式口径</b>逐一过筛（含第 22 种变体「数字化利润」）。范围：客户解决方案、产品金字塔、多组件系统、交换平台、时间利润、爆款、利润乘数、专业化、装机基础、事实标准、品牌、专业产品、区域领先、交易规模、价值链位置、周期、售后、新产品、相对市场份额、经验曲线、低成本业务设计。</div>
+      </div>
+      <div class="card" style="grid-column:span 2;flex-direction:row;gap:18px;align-items:stretch">
+        <div style="flex:1;background:var(--brand-08);border-radius:8px;padding:12px 14px">
+          <div style="font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--brand-100);margin-bottom:8px">✓ 五条筛选标准</div>
+          <div class="lst" style="gap:5px;font-size:13.5px">
+            <div class="li">客户价值契合度——是否兑现 A1「确定性×满足感×便利性」价值等式</div>
+            <div class="li">企业控制点匹配——是否依托 3000 万客户/千店/品牌/燃油现金流</div>
+            <div class="li">行业证据支持度——中国市场是否已有跑通的盈利路径</div>
+            <div class="li">现金流特征——过渡期是否提供稳定可预测的现金流</div>
+            <div class="li">利润持久性与防御力——能否抵御价格战与规模对手复制</div>
+          </div>
+        </div>
+        <div style="flex:1;padding:12px 14px">
+          <div style="font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--brand-100);margin-bottom:8px">✓ 筛选结论</div>
+          <div style="font-size:13.5px;line-height:1.75;color:var(--ink-2)"><b>5 种进入候选：</b>客户解决方案（置换全案闭环）、售后/装机基础（服务利润池）、时间利润（2026–2027 先手）、品牌（认知重建定价权）、利润乘数（平台/渠道复用）。<b>明确拒绝：</b>数字化利润/软件订阅（付费渗透率 12.8%、仅 31% 常用）、相对市场份额（无法战胜比亚迪）、经验曲线（无成本规模）、交换平台/事实标准（非平台型）、周期/爆款/新产品（不具持续性）。</div>
+        </div>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode dk"><div class="ft">21 种模式全库</div><div class="fd">Mercer / Slywotzky 口径</div></div>
+        <div class="farr">→</div>
+        <div class="fnode dk"><div class="ft">5 种进入候选</div><div class="fd">C01 客户解决方案 · C02 售后/装机基础 · C03 时间利润 · C04 品牌 · C05 利润乘数</div></div>
+        <div class="farr">→</div>
+        <div class="fnode"><div class="ft">明确拒绝</div><div class="fd">软件订阅 · 相对市场份额 · 经验曲线 · 交换平台/事实标准 · 周期/爆款/新产品</div></div>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S22 盈利模式 · 客户价值等式 ============ -->
+<section class="screen" data-ch="05" data-title="客户价值等式">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Value Equation</span></div>
+    <h2 class="s-title">盈利模式 · 客户价值等式</h2>
+    <p class="s-sub">三类客群的价值来源拆解——净价值主要由「避免损失＋风险下降」驱动。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:18px">
+      <div class="card">
+        <div class="card-title">A1 · 存量置换升级客户</div>
+        <div class="card-body" style="font-size:13.8px">
+          <strong>＋新增收益：</strong>电耗替代油耗的使用成本下降；智能达标产品力提升用车体验与再售价值；置换升级至 20–30 万价格带的预算上行。<br>
+          <strong>＋避免损失：</strong>规避燃油资产持续贬值（三年保值率 46.07% 下行）与购置税退坡后的购车成本上升；避免品牌认知代差扩大。<br>
+          <strong>＋营运资金改善：</strong>以旧换新补贴（报废 12% 最高 2 万/置换 8% 最高 1.5 万）直接降低净支出；厂商金融降低首付月供；旧车经官方认证二手车折价换新。<br>
+          <strong>＋风险下降：</strong>该品牌质量口碑＋千店服务保障＋全系动力总成终身质保＋保值率相对新势力更稳健。<br>
+          <strong>−采用成本：</strong>使用习惯切换、纯电/智驾信任不足、智能赛道认知缺位、置换流程与旧车处置成本。
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">净价值：正 · 主要来自避免损失＋风险下降</div>
+      </div>
+      <div class="card">
+        <div class="card-title">C1 · 商务/公商务人群</div>
+        <div class="card-body" style="font-size:13.8px">
+          <strong>＋新增收益：</strong>商务轿车级插混/增程商务车高频用车成本下降；智能化带来的商务形象与驾乘体验升级。<br>
+          <strong>＋避免损失：</strong>避免商务采购预算被比亚迪汉/问界分流；避免公务形象认知老化。<br>
+          <strong>＋营运资金改善：</strong>商务采购金融/租赁方案（含税筹划）；公商务批量置换的集采优惠。<br>
+          <strong>＋风险下降：</strong>B 级商务车可靠性与售后保障；千店服务网络覆盖。<br>
+          <strong>−采用成本：</strong>新能源动力总成可靠性/充电便利顾虑；车队管理习惯切换。
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-3)">净价值：正 · 细分规模有限但利润率高</div>
+      </div>
+      <div class="card g-span-2">
+        <div class="card-title">D1 · 他品牌存量增换购客户 · 价值验证</div>
+        <div class="card-body" style="font-size:13.8px"><strong>净价值逻辑：</strong>从自主/日系燃油车主获取的新能源置换增量；合资品质＋服务网络兑现「确定性」诉求；避免其跨品牌二选一后流失。净价值弱于 A1（缺信任基础），作为 A1 之外的增量补充，投入与触达成本更高。</div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <tr><th style="width:22%">目标客户</th><th style="width:44%">净价值逻辑</th><th>价值指标</th></tr>
+            <tr><td><strong>A1</strong></td><td>净价值为正且主要由「避免损失＋风险下降」驱动——价值主张不是「更便宜」而是「更确定」，可支撑不高于自主的价格锚点（贴近 17 万元成交价）。</td><td>置换转化率、3 年 TCO、补贴利用率、客户留存率、置换全案渗透率</td></tr>
+            <tr><td><strong>C1</strong></td><td>以「商务确定性＋智能化达标」承接商务轿车基盘的商务升级，价值主要来自避免流失与风险下降。</td><td>新能源商务车份额、集采中标率、车队留存率</td></tr>
+            <tr><td><strong>D1</strong></td><td>净价值弱于 A1（缺信任基础），作为增量补充。</td><td>跨品牌置换转化率、新能源份额净增</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S23 候选模式 ============ -->
+<section class="screen" data-ch="05" data-title="候选模式">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Candidates</span></div>
+    <h2 class="s-title">盈利模式 · 候选模式</h2>
+    <p class="s-sub">五种进入候选的盈利模式——从门户到捕获层的组合逻辑。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card-title">C01 · 客户解决方案（置换全案闭环）</div>
+          <span class="badge enter">主模式</span>
+        </div>
+        <div class="card-body" style="font-size:14px">把「旧车处置＋新车（插混/增程）＋国家补贴代办＋金融保险＋延保服务」打包为面向 A1 客户的置换全案，用一个低摩擦方案承接整条置换旅程；利润来自方案内新车毛利＋金融/保险佣金＋延保，并通过打包保护整车成交价（避免单点价格战）。<strong>适配：</strong>唯一依托不可复制控制点——3000 万保有客户数据、千店渠道与政策置换红利；以旧换新已把「置换」做成政策驱动的真实需求，行业证据充分。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16.5px">C02 · 售后/装机基础（服务利润池）</div>
+        <div class="card-body" style="font-size:14px">以 3000 万保有客户＋千店渠道为装机基础，从「售后维保＋延保＋二手车＋金融保险」获取服务利润；燃油过渡期售后现金流（1.0–1.2 万亿维保、售后占经销商毛利 80.8%）反哺新能源建设，长期转向电池检测/二手车/延保新服务。<strong>适配：</strong>该品牌体系传统强项与唯一仍由合资主导的利润池；现金流特征与「靠燃油养转型」节奏完全匹配。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16.5px">C03 · 时间利润（2026–2027 窗口期先手）</div>
+        <div class="card-body" style="font-size:14px">在购置税减半窗口（2027 底到期）与外部技术交付窗口（外部智驾供应商 2026Q3 上车、新平台 40% 降本、新电子电气架构）重叠期，抢先向 A1 提供「智能化达标＋插混/增程」的确定性产品，在竞对尚未触及「合资存量」定位时建立承接心智。<strong>适配：</strong>与 2026–2027 新品投放节奏吻合；但窗口红利是外部给定的、有到期时限，故作为辅助而非主模式。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16.5px">C04 · 品牌（认知重建带来定价权恢复）</div>
+        <div class="card-body" style="font-size:14px">重建「德系品质×智能达标」的品牌认知，使 15–25 万价格带新能源产品获得高于纯性价比竞品的心理定价权，并支撑服务与置换权益的信任溢价。<strong>适配：</strong>差异化价值主张的底层支撑、保值率与服务的放大器；但需时间与产品力兑现，不能单独构成收入主源，故作为支撑模式。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16.5px">C05 · 利润乘数（平台/技术/渠道复用）</div>
+        <div class="card-body" style="font-size:14px">把 新平台/新电子电气架构、外部智驾供应商智驾、千店渠道与 3000 万客户数据在「插混/增程/纯电」多产品线与「新车/服务/金融」多利润点间复用，同一客户在同一生命周期内贡献新车、金融、延保、二手车多笔利润。<strong>适配：</strong>与 C01＋C02 组合天然咬合；依赖其他模式落地质量，本身不独立产生利润，故为组合层模式。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S24 主辅模式架构 ============ -->
+<section class="screen" data-ch="05" data-title="主辅模式架构">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Architecture</span></div>
+    <h2 class="s-title">主辅模式架构 · 价值获取系统</h2>
+    <p class="s-sub">C01 为门户、C02 为捕获层、C03/C04 为时序与支撑、C05 为组合层。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">门户 · 获客</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C01</div>
+          <div style="font-size:13.5px;color:var(--ink-2)">客户解决方案·置换全案<br>（新能源整车承载）</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">触点 · 渠道</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C01/C03</div>
+          <div style="font-size:13.5px;color:var(--ink-2)">渠道重构<br>（千店＋新能源网点）</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">变现 · 服务</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C02</div>
+          <div style="font-size:13.5px;color:var(--ink-2)">售后/装机基础<br>（服务利润池）</div>
+        </div>
+        <div class="card" style="text-align:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:.2em;color:var(--brand-60);font-weight:700">放大 · 品牌</div>
+          <div style="font-size:17px;font-weight:800;color:var(--brand-100);margin:6px 0">C04</div>
+          <div style="font-size:13.5px;color:var(--ink-2)">品牌认知重建<br>（定价权恢复）</div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">架构结论</span>
+        主模式：<strong>客户解决方案（C01 置换全案闭环）</strong>——以「旧车＋新车＋补贴＋金融＋延保」打包承接 A1 存量置换客户，保护整车定价并锁定后续利润；辅助模式：<strong>售后/装机基础（C02，承载过渡期现金流与长期利润）、时间利润（C03，2026–2027 窗口先手）、品牌（C04，支撑定价权）</strong>。三者构成「获客门户 → 渠道触点 → 服务变现 → 品牌放大器」的价值获取系统；<strong>C05 利润乘数</strong>作为组合层把同一客户多轮变现。软件订阅/数字化利润在筛选阶段明确拒绝。
+      </div>
+      <div class="card">
+        <div class="card-title">为什么主模式选 C01 而非 C02？</div>
+        <div class="card-body" style="font-size:14.5px">某汽车公司的战略任务是「承接存量」——如果只用售后模式变现 3000 万老客户，客户仍会流向自主新能源（81.2% 置换首选新能源），服务利润池将随基盘萎缩而枯竭；只有用「置换全案」把老客户的第一台新能源车留在该品牌体系（新车毛利＋金融＋延保），售后模式才有长期的装机基础。故 <strong>C01 是门户、C02 是捕获层</strong>。拒绝软件订阅有直接证据（付费渗透率 12.8%、仅 31% 常用）；拒绝相对市场份额/经验曲线是因 10–20 万规模竞争无法战胜比亚迪。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S25 价值获取机制 ============ -->
+<section class="screen" data-ch="05" data-title="价值获取机制">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Offerings</span></div>
+    <h2 class="s-title">价值获取机制 · 提供物与客户价值</h2>
+    <p class="s-sub">五类提供物如何把「承接存量」转化为可交付的客户价值。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-auto-rows:auto;gap:18px">
+      <div class="card g-span-2">
+        <div class="card-title" style="font-size:16.5px">① 置换全案（换购闭环套餐）</div>
+        <div class="card-body" style="font-size:14px">旧车官方认证回收＋新车（插混/增程为主，15–25 万价格带）＋以旧换新补贴代办＋厂商金融＋延保/服务包，一站式打包。<strong>目标：</strong>A1（主攻）、D1（次攻）。<strong>客户价值：</strong>以最低摩擦完成升级置换——补贴落地、旧车保值、金融月供可控、质保服务兜底。<strong>指标：</strong>置换转化率、全案渗透率、补贴利用率、留存率。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">② 燃油过渡期售后与延保</div>
+        <div class="card-body" style="font-size:14px">燃油车维保＋全系动力总成终身质保＋延保服务。<strong>目标：</strong>3000 万存量燃油车主。<strong>客户价值：</strong>以服务口碑维系存量关系，为未来置换保留触点。<strong>指标：</strong>售后产值、售后毛利占比（80.8%）、延保渗透率、到店频次。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">③ 官方认证二手车＋残值管理</div>
+        <div class="card-body" style="font-size:14px">旧车回收、认证、再售与保值率运营。<strong>目标：</strong>置换客户与二手车买家。<strong>客户价值：</strong>旧车获得高于散售的确定残值，降低置换净支出；保值率反向支撑品牌。<strong>指标：</strong>认证交易量、回收折价率、三年保值率（52.39%）。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">④ 厂商金融＋保险合作</div>
+        <div class="card-body" style="font-size:14px">置换分期、残值租赁、车险合作产品。<strong>目标：</strong>A1/C1 置换客户。<strong>客户价值：</strong>降低首付与月供、提升购买力；商务客户获得车队金融方案。<strong>指标：</strong>金融渗透率（23%）、金融产品毛利、保险合作佣金。</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px">⑤ 智能达标标配</div>
+        <div class="card-body" style="font-size:14px">外部智驾供应商全场景高阶智驾（2026Q3 上车）＋新电子电气架构＋智能座舱，作为产品力标配而非收费项。<strong>目标：</strong>A1 置换客户。<strong>客户价值：</strong>消除「合资智能落后」认知短板，智能达标满足感内嵌于整车。<strong>指标：</strong>智驾标配率、城市 NOA 可用性与满意度、对购车决策贡献度。</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S26 付费与合同 ============ -->
+<section class="screen" data-ch="05" data-title="付费与合同">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Pricing</span></div>
+    <h2 class="s-title">付费与合同</h2>
+    <p class="s-sub">每类提供物的付费方、价格公式与合同风险分担设计。</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:16%">提供物</th><th style="width:20%">付费方 / 收费单位</th><th style="width:34%">价格公式 · 定价机制</th><th>合同与风险分担</th></tr>
+        <tr><td><strong>置换全案</strong></td><td>置换客户（新车＋服务包付费）；金融/保险机构（佣金/贴息分摊）。按台/单，金融按月。</td><td>客户净支出 = 新车成交价（一口价透明，贴近 17 万锚点）− 旧车回收价 − 国家补贴（报废 12% 最高 2 万/置换 8% 最高 1.5 万）− 金融贴息 ＋ 延保/服务包费。一口价透明＋置换专项权益，用打包保护整车成交价。</td><td>置换＋金融＋延保合同组合；旧车残值风险由官方认证二手车体系承担，新车质量风险由厂商质保承担，金融信用风险由合作机构共担。</td></tr>
+        <tr><td><strong>燃油售后与延保</strong></td><td>存量燃油车主。按次（维保工时＋配件）与按年（延保）。</td><td>工时×标准费率 ＋ 配件价格 ＋ 延保年费（随车龄/里程定价）。一口价透明维保＋终身质保绑定，维持售后毛利。</td><td>延保合同约定质保范围与除外项；配件/质量风险由厂商体系承担；经销商按服务佣金分成。</td></tr>
+        <tr><td><strong>官方认证二手车</strong></td><td>置换客户（差价）与二手车买家（认证溢价）。按台。</td><td>旧车评估价（认证体系）＋置换加价回收补贴 − 再售认证服务费；再售 = 认证车溢价定价。官方认证＋一口价再售管理残值曲线，以旧换新补贴作杠杆。</td><td>回收合同约定残值担保；残值波动风险由认证二手车库存与金融（残值租赁）分担。</td></tr>
+        <tr><td><strong>厂商金融＋保险</strong></td><td>客户（利息/租金）；合作银行/险企（佣金）。按月（分期/租赁）、按单（保险）。</td><td>分期：本金×(1＋利率)/期数；残值租赁：月租 = 车价 − 残值 ＋ 融资成本；保险：合作产品佣金分成。厂商贴息＋合作渠道佣金，以「置换全案」场景切入而非纯利差竞争。</td><td>金融合同由持牌机构承做、信用风险共担；车险行业承保亏损 56 亿——保险以合作佣金模式介入，不承担承保风险。</td></tr>
+        <tr><td><strong>智能达标标配</strong></td><td>无直接付费方（成本内嵌于整车价格）。不单独收费。</td><td>智驾成本（L2+ 感知硬件约 4600 元）计入整车 BOM 与成交价。标配化（对标高速 NOA 标配占比超 60% 趋势），不设订阅收费，避免「高关注低支付」陷阱。</td><td>与外部智驾供应商/小鹏的供给协议锁定交付与质量；OTA 升级责任由供应商共担。</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S27 收入、利润与控制 ============ -->
+<section class="screen" data-ch="05" data-title="收入利润与控制">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Capture</span></div>
+    <h2 class="s-title">收入、利润与控制</h2>
+    <p class="s-sub">利润如何形成、何时确认、靠什么控制点守住。</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:16%">提供物</th><th style="width:20%">收入时点</th><th style="width:36%">利润形成逻辑</th><th>控制点</th></tr>
+        <tr><td><strong>置换全案</strong></td><td>新车交付确认整车收入；金融佣金随放款确认；延保/服务费按服务期递延。</td><td>以打包方案维持新车成交价（避免纯价格战）获取整车毛利（新平台降本 40% 支撑），叠加金融/延保服务利润——整体单车毛利贡献高于裸车价格战场景。</td><td>3000 万保有客户数据资产（定向触达）＋千店渠道承接＋该品牌信任。</td></tr>
+        <tr><td><strong>燃油售后与延保</strong></td><td>维保即时确认、延保按年/服务期确认。</td><td>售后毛利贡献 80.8% 是过渡期现金流主源，反哺新能源建设；随新能源化被电池检测/二手车评估/延保新服务部分对冲。</td><td>千店渠道＋存量客户关系＋该品牌服务口碑。</td></tr>
+        <tr><td><strong>官方认证二手车</strong></td><td>回收时锁定差额，再售时确认交易/认证收入。</td><td>二手车市场 1.29 万亿为增量利润池；认证溢价与残值管理是品牌资产的货币化。</td><td>3000 万保有客户旧车供给＋官方认证体系＋保值率品牌资产。</td></tr>
+        <tr><td><strong>厂商金融＋保险</strong></td><td>放款/保单生效确认佣金与利差。</td><td>金融保险占经销商毛利 36.2% 为高毛利服务层；随新能源金融渗透率（14%）回升而增长。</td><td>客户触点与置换场景（打包入口）。</td></tr>
+        <tr><td><strong>智能达标标配</strong></td><td>无独立收入时点。</td><td>以「智能达标」支撑 15–25 万价格带成交价而非收取订阅费；成本可控（新平台降本 40%＋智驾硬件降本 30%+）。</td><td>外部技术合作矩阵（外部智驾供应商/小鹏/地平线/中科创达）。</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- ============ S28 单位经济性 ============ -->
+<section class="screen" data-ch="05" data-title="单位经济性">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Unit Economics</span></div>
+    <h2 class="s-title">单位经济性</h2>
+    <p class="s-sub">单台新能源车的收入、成本与利润形成逻辑——标注为方向性测算。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">验证单位</div>
+        <div class="card-body" style="font-size:14.5px">单台新能源车（插混/增程为主，<strong>15–20 万主力价格带</strong>，中国口径、人民币）。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">收入公式</div>
+        <div class="card-body" style="font-size:14.5px">单车成交价（15–20 万，贴近 17 万级锚点）− 促销/金融贴息 − 以旧换新补贴让渡（部分）= <strong>净收入</strong>；成交价由 新平台降本支撑（目标较 既有平台 降 40%），避免跌破毛利率 <strong>8%</strong> 的合资红线。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">变动成本</div>
+        <div class="card-body" style="font-size:14.5px">电池系统占 BOM <strong>35%–50%</strong>＋动力总成 7%–10%＋智驾感知硬件（L2+ 约 4600 元）＋车身/电子电器＋制造与物料；电池议价受宁德/弗迪双寡头制约（CR2 约 65%）——<strong>电池为最大不可控成本项</strong>。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">贡献利润逻辑</div>
+        <div class="card-body" style="font-size:14.5px">行业单车净利天花板 <strong>5000–7000 元</strong>（约为丰田 1/3–2/5）；需以「整车毛利（新平台降本＋插混/增程复用燃油动力总成）」维持正贡献，叠加服务利润（售后/金融/延保）提升综合单车经济性。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">营运资金与现金转换</div>
+        <div class="card-body" style="font-size:14.5px">产能利用率约 <strong>38%</strong> 导致固定成本摊薄压力大、现金流占用高；以销定产＋订单制（新能源渠道低库存模式）降低存货占用；燃油售后现金流作为过渡期营运资金蓄水池。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">敏感性</div>
+        <div class="card-body" style="font-size:14.5px">销量（爬坡节奏）、终端成交价（价格战每 <strong>−1%</strong> 侵蚀全量毛利）、电池成本（BOM 35%–50%）、产能利用率（38%→55%+ 的固定成本摊薄）、置换转化率。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S29 盈利测算 ============ -->
+<section class="screen" data-ch="05" data-title="盈利测算">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Projection</span></div>
+    <h2 class="s-title">盈利测算 · 三阶段与驱动因素</h2>
+    <p class="s-sub">方向性测算，非精确盈利承诺——结论依赖两个方向性假设。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
+        <div class="card">
+          <div class="kicker">阶段一 · 过渡期 2026–2027</div>
+          <div class="card-body" style="font-size:14px">以燃油售后现金流（1.0–1.2 万亿维保池中该品牌份额）为<b>主要利润源</b>，新能源业务以盈亏平衡/微亏换取窗口期爬坡。</div>
+        </div>
+        <div class="card">
+          <div class="kicker">阶段二 · 成长期 2028–2030</div>
+          <div class="card-body" style="font-size:14px">新平台降本落地后新能源整车毛利<b>转正</b>，叠加服务利润池形成「整车＋服务」双利润。</div>
+        </div>
+        <div class="card tint">
+          <div class="kicker">阶段三 · 整体结论</div>
+          <div class="card-body" style="font-size:14px">单台净利维持 5000–7000 元行业区间＋服务利润增厚，整体盈利可持续；<b>软件订阅不计入收入</b>。结论高度依赖置换转化率与 新平台降本两个方向性假设，标 <strong>directional</strong>。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">利润驱动因素</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px">
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:13.5px"><b>① 置换转化率</b><div style="color:var(--ink-3);margin-top:3px">3000 万存量年度可触达与转化（A07）</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:13.5px"><b>② 新平台降本 40%</b><div style="color:var(--ink-3);margin-top:3px">决定新能源整车毛利率（A03）</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:13.5px"><b>③ 服务利润渗透</b><div style="color:var(--ink-3);margin-top:3px">售后/延保/二手车/金融增厚</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:13.5px"><b>④ 产能利用率</b><div style="color:var(--ink-3);margin-top:3px">38%→55%+ 固定成本摊薄（E88）</div></div>
+          <div style="background:var(--brand-08);border-radius:8px;padding:10px;font-size:13.5px"><b>⑤ 窗口期出货</b><div style="color:var(--ink-3);margin-top:3px">购置税与以旧换新窗口爬坡</div></div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">盈亏平衡 / 回收期 · 方向性</span>
+        在单车净利 5000–7000 元与产能利用率 38% 下，新能源业务需达到<b>数十万辆级年销量</b>（约为当前销量 102.4 万量级内的结构转换＋承接比例）方能摊薄固定成本实现整车环节盈亏平衡；整体公司层面依赖燃油售后现金流覆盖过渡期亏损，投资回收期取决于 2026–2027 窗口承接爬坡速度。具体数值因某汽车公司单台成本无公开数据（data gap）仅作方向性判断。
+      </div>
+    </div>
+        <div class="hbar">
+        <div style="flex:40%;background:var(--brand-100)">过渡期 2026–27 · 燃油售后现金流</div>
+        <div style="flex:35%;background:var(--brand-60)">成长期 2028–30 · 整车＋服务双利润</div>
+        <div style="flex:25%;background:var(--brand-40)">稳态 · 服务利润池增厚</div>
+      </div>
+      <div class="hleg">
+        <span><i style="background:var(--brand-100)"></i>新能源微亏爬坡，靠燃油养转型</span>
+        <span><i style="background:var(--brand-60)"></i>新平台降本落地，整车毛利转正</span>
+        <span><i style="background:var(--brand-40)"></i>单台 5000–7000 元 ＋ 售后/金融/延保</span>
+      </div>
+    </div>
+</section>
+
+<!-- ============ S30 验证测试 ============ -->
+<section class="screen" data-ch="05" data-title="验证测试">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">05</span><span class="ch-name">Profit Model · Validation</span></div>
+    <h2 class="s-title">验证测试</h2>
+    <p class="s-sub">设计成立与否由指标与阈值检验——每项均可复核、可证伪。</p>
+  </header>
+  <div class="s-body">
+    <div class="table-wrap t-wrap-scroll">
+      <table>
+        <tr><th style="width:22%">验证假设</th><th style="width:15%">关键指标</th><th style="width:30%">阈值或信号</th><th style="width:22%">验证方法</th><th>复核频率</th></tr>
+        <tr><td><strong>存量置换承接成立</strong>（A01/A07）</td><td>老客户新能源置换转化率、置换全案渗透率</td><td>对照 81.2% 行业置换流向：试点转化率 ≥ 行业均值 60% 且留存率显著高于现状则成立</td><td>2026–2027 置换专项试点（客户数据资产化＋定向触达）</td><td>季度</td></tr>
+        <tr><td><strong>新平台降本 40% 可落地</strong>（A03）</td><td>新平台 量产车单车 BOM/毛利率 vs 既有平台</td><td>首款 新平台纯电上市后单车毛利 ≥ 行业区间（5000–7000 元）或毛利率 ≥ 8%</td><td>BOM 拆解与单车毛利披露跟踪</td><td>每款上市后</td></tr>
+        <tr><td><strong>智驾「智能达标」可兑现</strong>（A04）</td><td>城市 NOA 可用性、满意度、智驾标配率</td><td>2026Q3 起上车车型可用性与满意度达主流自主同级；订阅收入占比不设目标</td><td>上市车型用户评测与售后数据</td><td>季度</td></tr>
+        <tr><td><strong>服务利润池承接现金流</strong>（A05）</td><td>售后＋金融＋二手车毛利占比、延保渗透率</td><td>售后＋金融保险毛利占比维持 55% 以上且新能源维保弥补燃油降幅 30%+</td><td>经销商毛利结构季度监测</td><td>季度</td></tr>
+        <tr><td><strong>软件订阅不可依赖</strong>（E98）</td><td>城市 NOA 付费渗透率与使用率</td><td>若渗透率突破 20% 且 A1 客群付费意愿显著上升再评估，否则维持标配</td><td>行业渗透率跟踪＋目标客群调研</td><td>半年</td></tr>
+        <tr><td><strong>产能利用率回升与爬坡</strong>（E88）</td><td>产能利用率、新能源月销量爬坡</td><td>38% 回升至 55%+；窗口期月销量形成向上斜率</td><td>中方股东产销快报（E82 口径）</td><td>月度</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- ============ S31 活动范围 ============ -->
+<section class="screen" data-ch="06" data-title="活动范围">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">06</span><span class="ch-name">Activity Scope</span></div>
+    <h2 class="s-title">活动范围 · 进入与不进入</h2>
+    <p class="s-sub">做「承接存量」的完整闭环，不做「追逐增量」的硬仗。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-template-rows:auto auto;gap:18px">
+      <div class="card" style="grid-row:span 1;background:var(--brand-08);border-color:var(--brand-12)">
+        <div class="card-title" style="color:var(--brand-100)">✓ 建议进入 · 承接存量闭环</div>
+      </div>
+      <div class="card" style="grid-row:span 1;background:#F1F3F5;border-color:#D7DEE6">
+        <div class="card-title">✕ 明确不进入 · 追逐增量硬仗</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden">
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>① 新能源整车研发制造销售</b>（插混/增程为主＋纯电补充，15–25 万）：新平台/新电子电气架构 平台落地、外部智驾供应商智驾上车、7 款 2026 新品与 2027 年约 30 款投放。<div style="color:var(--ink-3);margin-top:4px;font-size:13px">承接 3000 万存量的载体（E61/E90）；插混/增程对「观望型」客户过渡摩擦最小。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>② 存量客户数据资产化与置换承接</b>：3000 万保有客户按车型/车龄/地域建模，定向触达与置换全案运营。<div style="color:var(--ink-3);margin-top:4px;font-size:13px">「别人没有、该品牌独有」的控制点（E61）；以旧换新与置换升级让承接可操作。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>③ 渠道重构</b>：主机厂控价、经销商服务；一口价透明＋新能源网点在 15–25 万价格带恢复密度＋服务佣金转型。<div style="color:var(--ink-3);margin-top:4px;font-size:13px">批零价差模式已结构性衰竭；新能源代理/融合模式可盈利。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>④ 燃油基盘过渡运营</b>：主流轿车/商务轿车/主力SUV＋智能化燃油产品线（燃油智能化）维持。<div style="color:var(--ink-3);margin-top:4px;font-size:13px">燃油售后现金流是过渡期资源；智能化燃油产品线验证「燃油＋智能化」可行。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>⑤ 服务链条</b>：售后维保＋延保＋官方认证二手车＋厂商金融保险，布局电池检测/二手车评估/延保新服务。<div style="color:var(--ink-3);margin-top:4px;font-size:13px">服务利润池（1.0–1.2 万亿维保＋1.29 万亿二手车＋约 3 万亿金融）是长期利润层。</div></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden">
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>① 自研动力电池（垂直整合）</b><div style="color:var(--ink-3);margin-top:4px;font-size:13px">吸引力最高但胜任权垫底（总分 2.55 最低）；以长期供应商锁定与二供策略管理成本（E20），不自研。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>② 自研智驾软件全栈</b><div style="color:var(--ink-3);margin-top:4px;font-size:13px">依赖外部供给（外部智驾供应商/小鹏/地平线）是现实约束也是高效路径；订阅收费不可依赖，自研不经济。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>③ 10 万元以下价格战、下沉首购客群</b><div style="color:var(--ink-3);margin-top:4px;font-size:13px">10–20 万自主占 65.2%、比亚迪 19.2%，成本与规模不可撼动；主动放弃 B2 客群。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>④ 30 万元以上高端智能化硬拼</b><div style="color:var(--ink-3);margin-top:4px;font-size:13px">问界成交均价 39.1 万、高端新能源 SUV 市占超 20%；高端化交由集团高端品牌 品牌承担。</div></div></div>
+        <div class="card" style="flex:1;min-height:0"><div style="font-size:14px"><b>⑤ 短期出海/海外盈利</b><div style="color:var(--ink-3);margin-top:4px;font-size:13px">自主出海路径对中方股东不适用，缺乏海外渠道与品牌能力；盈利测算仅基于中国市场。</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S32 战略控制 ============ -->
+<section class="screen" data-ch="07" data-title="战略控制">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">07</span><span class="ch-name">Strategic Control</span></div>
+    <h2 class="s-title">战略控制 · 五大控制点</h2>
+    <p class="s-sub">「把存量控制点的资产转化为增量控制点的时间」——四自有一合作。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:repeat(6,1fr);grid-auto-rows:auto;gap:18px">
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">控制点 1 · 客户关系</div>
+        <div class="card-title">3000 万保有客户数据资产</div>
+        <div class="card-body" style="font-size:14.5px">按车型/车龄/地域/置换概率建模，建立「置换预测＋定向触达」能力，用客户数据优势做自主/新势力无法复制的精准承接；同步布局数据合规。</div>
+        <div><span class="tag">E61</span><span class="tag">A07</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">控制点 2 · 渠道与服务</div>
+        <div class="card-title">千店渠道与服务口碑</div>
+        <div class="card-body" style="font-size:14.5px">该品牌经销商突破 1000 家＋J.D. Power IQS 前三/CACSI 合资双冠——把服务口碑转化为对「观望型」客户的信任溢价，对冲新势力直营网络在三四线的空白。</div>
+        <div><span class="tag">E89</span><span class="tag">E66</span></div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div class="kicker">控制点 3 · 品牌</div>
+        <div class="card-title">该品牌资产</div>
+        <div class="card-body" style="font-size:14.5px">重建「德系品质×智能达标」认知：该品牌在「高端集群」仍保有数十年认知资产、「该品牌集群」已被自主主导——用 智能化燃油产品线验证的「燃油＋智能化」平移至插混/增程产品线，恢复定价权与保值率。</div>
+        <div><span class="tag">E64</span><span class="tag">E84</span><span class="tag">E44</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div class="kicker">控制点 4 · 现金流</div>
+        <div class="card-title">燃油基盘现金流</div>
+        <div class="card-body" style="font-size:14.5px">三款燃油主力车型与燃油售后作为过渡期资源蓄水池，反哺新能源建设；在燃油基盘每年 −9% 萎缩的节奏内完成「现金流→新产品」的转移。</div>
+        <div><span class="tag">E84</span><span class="tag">E35</span><span class="tag">E08</span><span class="tag">A05</span></div>
+      </div>
+      <div class="card" style="grid-column:span 3">
+        <div class="kicker">控制点 5 · 技术供给（合作锁定）</div>
+        <div class="card-title">外部技术合作矩阵</div>
+        <div class="card-body" style="font-size:14.5px">以外部智驾供应商（智驾）、新平台/新电子电气架构（平台降本 40%）、中科创达（座舱）合作锁定「智能达标」的确定性与成本——<strong>控制点在于合同锁定与交付管理能力而非技术自持</strong>；智驾/平台能力通过合作获得增量控制点，而非自建。</div>
+        <div><span class="tag">E90</span><span class="tag">E94</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S33 风险管理 ============ -->
+<section class="screen" data-ch="08" data-title="风险管理">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">08</span><span class="ch-name">Risk Management</span></div>
+    <h2 class="s-title">风险管理 · 六维风险与应对</h2>
+    <p class="s-sub">最大风险不是「转得慢」，而是「补贴新能源却形不成正循环」。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">风险 1 · 政策</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>购置税减半 2027 底到期、退坡后价差抹平；双积分负分成本上升与国七成本对燃油基盘二次挤压。<strong>缓释：</strong>把 2026–2027 定义为「抢装＋承接」窗口，以 7 款新品最大化窗口出货；以插混/增程对冲双积分与国七；储备退坡后定价预案。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">风险 2 · 竞争与行业</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>价格战持续侵蚀单车毛利（终端优惠 27.77%、合资毛利率跌破 8%）；以价应战将陷入「以价换量」陷阱。<strong>缓释：</strong>以「置换全案＋服务利润」保护整车定价，用 新平台降本把让利空间转化为份额而非亏损，避开自主最强的低价客群。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">风险 3 · 技术供给</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>外部智驾供应商智驾、新平台降本、新电子电气架构若延期，2026–2027 产品力窗口错失——外部依赖型转型的致命单点。<strong>缓释：</strong>把技术供给里程碑纳入合资治理层管理，设置延期触发预案；供给到位前用 智能化燃油产品线维持过渡期产品力下限。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">风险 4 · 组织与合资</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>该品牌「保盈利优先」与转型速度诉求存在张力，爬坡期亏损若得不到容忍则投入被削减；合资决策链长。<strong>缓释：</strong>在合资治理层对「3–5 年盈利容忍度＋投入预算＋盈亏平衡时间表」达成书面承诺；以燃油售后现金流反哺证明自我造血。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">风险 5 · 客户流失</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>3000 万基盘处于 81.2% 置换首选新能源的迁移通道上，产品不承接则「弹药」全部输给自主。<strong>缓释：</strong>把存量承接列为第一战略优先级，用数据资产化＋置换全案抢先承接；以服务口碑与保值率管理提升留存黏性。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">风险 6 · 财务</div>
+        <div class="card-body" style="font-size:14px"><strong>风险：</strong>燃油现金流萎缩快于新能源爬坡导致「现金流断档」；产能利用率 38% 固定成本负担沉重。<strong>缓释：</strong>以销定产＋订单制控制库存与营运资金；用售后现金流作为过渡蓄水池；将单台成本与产能利用率验证纳入 validation tests 与 data gaps。</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ S34 数据缺口 ============ -->
+<section class="screen" data-ch="09" data-title="数据缺口">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">09</span><span class="ch-name">Data Gaps</span></div>
+    <h2 class="s-title">数据缺口</h2>
+    <p class="s-sub">八项缺口使相关测算标为方向性——每项均给出校准动作。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid grid-2" style="grid-auto-rows:auto;gap:18px">
+      <div class="card">
+        <div class="kicker">影响章节 · 单位经济性</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>某汽车公司新能源单台成本/单车亏损无公开数据，只能以行业区间作方向性参照。<strong>影响：</strong>unit economics 与盈利测算只能标 directional。<strong>建议：</strong>用投资收益与销量差倒推单车利润并标注估算；或待 新平台 首款车型上市后按 BOM 拆解校准。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 存量承接</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>3000 万保有客户中可触达/可置换比例无历史基线。<strong>影响：</strong>存量承接上限与转化目标只能假设（A07）。<strong>建议：</strong>启动 3000 万客户数据资产化试点，建立可触达率、置换意向率、转化率真实基线。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 服务利润池</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>售后/金融/二手车各业务某汽车公司口径毛利拆分无公开数据（行业为收入/产值口径）。<strong>影响：</strong>服务利润池量化受「收入口径」高估风险。<strong>建议：</strong>用行业费率估算实际利润并标注口径；或内部获取分部毛利数据。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 市场扫描·存疑项</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>ID 系列「在华跌破 8 万辆」为单源媒体口径；产能利用率约 54%/38% 为单源测算。<strong>影响：</strong>承接基数与固定成本摊薄测算有不确定区间。<strong>建议：</strong>用乘联会/终端上险口径交叉验证；用集团年报产能与产量复核。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 口径矛盾</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>集团（中国）2026H1 销量存在「97.1 万/131 万」两套口径；2026H1 新能源零售 −14.0% 与批发 +5.1% 并存。<strong>影响：</strong>在华规模与下滑幅度判断不确定。<strong>建议：</strong>待某跨国汽车集团（中国）2026 年半年报官方数据复核，拆分零售与出口贡献。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 软件订阅</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>智驾订阅/软件对车企营收贡献无行业汇总数据（仅有渗透率 12.8% 与使用率 31% 的间接证据）。<strong>影响：</strong>「软件订阅不可依赖」依赖间接证据。<strong>建议：</strong>用头部车企财报智驾收入分部数据追踪，作为验证测试输入。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 渠道重构</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>渠道重构（新能源网点恢复＋服务佣金转型）投入规模与回收期无量化数据。<strong>影响：</strong>活动范围中渠道重构可行性仅能定性。<strong>建议：</strong>补研究新能源网点单店模型（建设成本、服务收入、盈亏平衡期）或基于经销商调查定向测算。</div>
+      </div>
+      <div class="card">
+        <div class="kicker">影响章节 · 商务客群</div>
+        <div class="card-body" style="font-size:13.8px"><strong>缺口：</strong>商务/公商务客户细分（C1）规模与新能源化渗透率无公开数据。<strong>影响：</strong>C1 主攻但体量未量化，优先级权重缺数据支撑。<strong>建议：</strong>用 B 级/商务细分销量结构数据补测 C1 规模与新能源接受度。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S35 索引与生成信息 ============ -->
+<section class="screen" data-ch="09" data-title="索引与生成信息">
+  <header class="s-head">
+    <div class="eyebrow"><span class="ch-num">09</span><span class="ch-name">Index</span></div>
+    <h2 class="s-title">证据与假设索引</h2>
+    <p class="s-sub">全报告引用证据与假设的全量清单，供复核与追溯。</p>
+  </header>
+  <div class="s-body">
+    <div class="grid" style="grid-template-rows:auto auto auto;gap:18px">
+      <div style="display:grid;grid-template-columns:3fr 1fr;gap:18px">
+        <div class="card">
+          <div class="card-title">证据索引 · Evidence IDs</div>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:13px;line-height:2.1;letter-spacing:.04em">E02 · E03 · E04 · E07 · E08 · E09 · E12 · E13 · E14 · E15 · E16 · E18 · E19 · E20 · E21 · E22 · E23 · E24 · E25 · E26 · E27 · E28 · E32 · E33 · E34 · E35 · E36 · E37 · E38 · E39 · E40 · E41 · E42 · E43 · E44 · E45 · E47 · E48 · E49 · E51 · E52 · E53 · E54 · E55 · E57 · E58 · E59 · E60 · E61 · E62 · E63 · E64 · E65 · E66 · E68 · E69 · E70 · E73 · E76 · E78 · E82 · E84 · E86 · E87 · E88 · E89 · E90 · E92 · E93 · E94 · E95 · E96 · E98 · E99 · E100</div>
+        </div>
+        <div class="card">
+          <div class="card-title">假设索引</div>
+          <div style="margin-top:10px;font-family:var(--mono);font-size:14px;line-height:2.3">
+            A01 · A02 · A03 · A04 · A05<br>A06 · A07 · A08 · A09 · A10
+          </div>
+          <div class="card-body" style="font-size:13.5px;margin-top:8px">方向性假设独立编号，均配验证计划与数据缺口。</div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lead">生成信息 · Source</span>
+        本文件由 Claude Cowork 基于 Business Design skill 生成的 Markdown 制作。源 JSON 与 Markdown 是正式内容源，但不随本演示型公开案例分发。Evidence IDs 与 Assumption IDs 仅保留用于展示结构化追溯方式；内部源文件指纹不公开。
+      </div>
+      <div style="display:flex;justify-content:center;gap:18px;align-items:center">
+        <span style="font-size:14px;color:var(--ink-3)">某汽车公司业务设计报告 · VDBD · 2026</span>
+        <span style="width:4px;height:4px;border-radius:50%;background:var(--brand-40)"></span>
+        <span style="font-size:14px;color:var(--ink-3)">以「承接存量」重建增长与品牌势能</span>
+        <span style="width:4px;height:4px;border-radius:50%;background:var(--brand-40)"></span>
+        <span class="badge partner">End of Report</span>
+      </div>
+    </div>
+        <div class="flow">
+        <div class="fnode"><div class="ft">3000 万</div><div class="fd">保有客户基盘（承接存量的本钱）</div></div>
+        <div class="fnode"><div class="ft">81.2%</div><div class="fd">燃油用户置换首选新能源（迁移通道）</div></div>
+        <div class="fnode"><div class="ft">2026–2027</div><div class="fd">购置税窗口 · 决定爬坡斜率</div></div>
+        <div class="fnode dk"><div class="ft">一句话</div><div class="fd">不是追逐增量，而是把存量重新「接住」</div></div>
+      </div>
+    </div>
+</section>
+<!-- SCREENS -->
+</main>
+
+<div class="navhint" id="navhint">← → 或空格键翻页 · 右侧圆点跳转章节</div>
+
+<div class="cluster" id="cluster">
+  <div class="seg"><span class="pwr"></span></div>
+  <div class="seg">
+    <span class="lab">Chapter</span>
+    <span class="val" id="cl-ch">—</span>
+  </div>
+  <div class="pg">
+    <span class="lab" style="flex:0 0 auto">Progress</span>
+    <span class="pgtrack"><span class="pgfill" id="cl-pg"></span></span>
+    <span class="val" id="cl-pos">0 / 0</span>
+  </div>
+  <div class="seg">
+    <span class="lab">Screen</span>
+    <span class="val" id="cl-scr">—</span>
+  </div>
+  <div class="seg" style="display:none" id="cl-src"></div>
+</div>
+
+<script>
+(function(){
+  var screens=Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var rail=document.getElementById('rail');
+  var cur=0,total=screens.length;
+  var chapters=[];
+  screens.forEach(function(s){
+    var c=s.getAttribute('data-ch');
+    if(chapters.indexOf(c)<0)chapters.push(c);
+  });
+  chapters.forEach(function(c,i){
+    var b=document.createElement('button');
+    b.title='章节 '+c;
+    b.addEventListener('click',function(){
+      for(var j=0;j<screens.length;j++){
+        if(screens[j].getAttribute('data-ch')===c){go(j);break;}
+      }
+    });
+    rail.appendChild(b);
+  });
+  var dots=Array.prototype.slice.call(rail.children);
+
+  function render(){
+    screens.forEach(function(s,i){s.classList.toggle('active',i===cur)});
+    dots.forEach(function(d,i){
+      d.classList.toggle('on',i===chapters.indexOf(screens[cur].getAttribute('data-ch')));
+    });
+    var ch=screens[cur].getAttribute('data-ch');
+    document.getElementById('cl-ch').textContent=ch;
+    document.getElementById('cl-pos').textContent=(cur+1)+' / '+total;
+    var kw=screens[cur].getAttribute('data-title')||'';
+    var scrEl=document.getElementById('cl-scr');
+    scrEl.textContent=kw;
+    document.getElementById('cl-pg').style.width=((cur+1)/total*100)+'%';
+    history.replaceState(null,'','#s'+(cur+1));
+  }
+  function go(n){
+    if(n<0)n=0;if(n>=total)n=total-1;
+    cur=n;render();
+  }
+  function next(){go(cur+1)}
+  function prev(){go(cur-1)}
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '||e.key==='PageDown'){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){e.preventDefault();go(0);}
+    else if(e.key==='End'){e.preventDefault();go(total-1);}
+  });
+
+  var wheelLock=false;
+  document.addEventListener('wheel',function(e){
+    if(wheelLock)return;
+    wheelLock=true;
+    setTimeout(function(){wheelLock=false},700);
+    if(e.deltaY>20)next();else if(e.deltaY<-20)prev();
+  },{passive:true});
+
+  var tx=0;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-tx;
+    if(Math.abs(dx)>60){dx<0?next():prev();}
+  },{passive:true});
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('.rail'))return;
+    if(e.target.closest('.cluster'))return;
+    var r=window.innerWidth;
+    if(e.clientX>r*0.72)next();else if(e.clientX<r*0.28)prev();
+  });
+
+  var hint=document.getElementById('navhint');
+  var t;
+  function flashHint(){hint.classList.add('show');clearTimeout(t);t=setTimeout(function(){hint.classList.remove('show')},3200);}
+  document.addEventListener('keydown',flashHint);
+
+  /* Fit-to-screen: scale the whole deck from a 1440x900 design baseline so
+     dense consulting pages never clip on smaller viewports. */
+  var BASE_W=1440,BASE_H=900;
+  function fit(){
+    var s=Math.min(1,window.innerWidth/BASE_W,window.innerHeight/BASE_H);
+    try{document.documentElement.style.zoom=s;}catch(e){}
+  }
+  window.addEventListener('resize',fit);
+  fit();
+
+  var h=parseInt((location.hash||'').replace('#s',''),10);
+  go(isNaN(h)?0:h-1);
+  window.addEventListener('hashchange',function(){
+    var hh=parseInt((location.hash||'').replace('#s',''),10);
+    if(!isNaN(hh))go(hh-1);
+  });
+  if(total>1)setTimeout(flashHint,900);
+})();
+</script>
+</body>
+</html>
