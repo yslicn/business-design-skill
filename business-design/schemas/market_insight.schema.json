@@ -178,6 +178,10 @@
           "statement": {
             "$ref": "#/definitions/nonEmptyString"
           },
+          "supporting_detail": {
+            "type": "string",
+            "description": "支撑该证据的原文细节：数字、口径、年份、地域、对比对象，或研究报告中的定位（脚注号/章节）。statement 是索引，supporting_detail 供 04 步写报告时展开，不填则报告只能引用一句话。"
+          },
           "evidence_type": {
             "type": "string",
             "enum": ["verified", "triangulated", "estimated"]

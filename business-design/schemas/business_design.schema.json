@@ -541,7 +541,7 @@
                   },
                   "pattern_origin": {
                     "type": "string",
-                    "enum": ["published_profit_patterns", "industry_observed", "custom_designed", "hybrid", "mercer_slywotzky"]
+                    "enum": ["mercer_slywotzky", "industry_observed", "custom_designed", "hybrid"]
                   },
                   "mechanism": {
                     "$ref": "#/definitions/nonEmptyString"

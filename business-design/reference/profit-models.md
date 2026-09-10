@@ -1,89 +1,115 @@
-# Value capture and profit-model design
+# 价值获取与盈利模式设计
 
-This reference prevents a common error: treating growth, premiumization, cost reduction, or funding as the profit model. It uses original generic pattern families rather than reproducing any proprietary catalogue.
+本文件供 Report consultant 设计盈利模式、VDBD architect 评审盈利模式时使用。它的目的不是要求机械套用某一份模式清单，而是防止把收入增长、产品升级、成本控制或融资安排误写成盈利模式。
 
-## 1. Definition
+## 一、定义：盈利模式是价值获取架构
 
-A value proposition explains customer value. A profit model explains how the enterprise captures a sustainable share of that value as profit and cash.
+价值主张回答“为客户创造什么价值”，盈利模式回答“企业如何把其中一部分持续转化为自己的利润”。完整的价值获取架构必须能说明：
 
-A complete value-capture architecture states:
+1. **客户价值**：客户因为什么结果愿意付费，而不只是购买了什么产品。
+2. **价值计量**：用什么指标衡量价值，如良率、交期、停机时间、认证周期、风险下降或客户全生命周期收益。
+3. **付费方与收费单位**：谁付费，按件、按吨、按账户、按使用量、按结果、按时间还是按交易收费。
+4. **定价与合同**：基础价、溢价、分成、订阅、长协、最低采购量、价格联动和风险分担如何组合。
+5. **单位经济性**：单客户、单产品、单项目或单交易的收入、变动成本、贡献利润、营运资金和现金回收是否成立。
+6. **控制点**：什么能力、资产、标准、关系或网络使利润不会迅速被竞争压平。
 
-1. customer outcome and willingness-to-pay logic;
-2. measurable value metric;
-3. payer and charging unit;
-4. price formula and pricing mechanism;
-5. contract terms and risk sharing;
-6. revenue timing;
-7. unit economics and cash conversion;
-8. strategic control that protects the economics.
+盈利模式不是以下概念的同义词：
 
-The following are inputs or adjacent plans, not complete profit models:
-
-| Content | Proper place | Missing value-capture question |
+| 常见内容 | 正确归属 | 为什么不能单独算盈利模式 |
 |---|---|---|
-| Revenue growth, volume, market expansion | Growth plan | How does value become unit profit? |
-| Premiumization or mix upgrade | Offering/portfolio | Which measurable value supports which price? |
-| Cost reduction or utilization | Operating model | Who pays and under what contract? |
-| R&D budget or financing | Resource plan | Why and how does the customer pay? |
-| “Technology premium” or “service fee” | Pricing direction | Formula, unit, conditions, risk sharing, and margin logic |
+| 收入翻番、销量增长、新市场增量 | 增长计划 | 说明规模从哪里来，没有说明价值如何变成利润 |
+| 高端化、产品组合升级 | 产品/业务组合 | 只有落实到价值计量、收费单位和定价机制后才形成价值获取 |
+| 降本、套保、提高产能利用率 | 经营与成本管理 | 改善利润水平，但没有改变企业如何获得报酬 |
+| 研发投入与融资安排 | 资源配置 | 说明如何投入，不说明客户为什么、按什么方式付费 |
+| “技术溢价”“服务收费” | 定价方向 | 缺少溢价依据、计算公式、合同结构和支付条件 |
 
-## 2. Screen generic pattern families
+## 二、先筛模式库，再设计收费机制
 
-State which library or family set is used. If the user provides a licensed taxonomy, record its exact version and keep it outside distributable skill files unless redistribution is authorized.
+Mercer/Slywotzky 相关材料在不同出版、翻译和培训版本中存在数量与命名差异。本 skill 默认尊重 user 采用的“Mercer 21 种盈利模式”口径；若 user 提供的资料版本不同，必须在 `pattern_screening.library_version` 中记录该版本，不擅自拼接不同版本。数量不是报告篇幅目标，但**先系统筛选模式库、再形成 shortlist** 是质量硬门。
 
-The built-in original families are:
+常见候选包括：客户解决方案、产品金字塔、多组件系统、交换平台、时间利润、爆款、利润乘数、专业化、装机基础、事实标准、品牌、专业产品、区域领先、交易规模、价值链位置、周期、售后、新产品、相对市场份额、经验曲线、低成本业务设计和数字化利润等。
 
-1. **Customer-relationship economics** — profit follows problem ownership, retention, share of wallet, or lifecycle service.
-2. **Product and portfolio economics** — profit follows differentiation, portfolio architecture, bundles, or cross-subsidy.
-3. **Platform and network economics** — profit follows matching, transactions, participation, data, or network effects.
-4. **Timing and lifecycle economics** — profit follows speed, scarcity windows, replacement cycles, or lifecycle timing.
-5. **Installed-base and aftermarket economics** — profit follows a deployed base, consumables, maintenance, upgrades, or recurring service.
-6. **Scale, cost, and experience economics** — profit follows utilization, procurement, learning, process advantage, or low-cost design.
-7. **IP, standard, data, and brand economics** — profit follows defensible rights, certification, standards, trust, or information advantage.
-8. **Value-chain-position economics** — profit follows control of a bottleneck, interface, route to market, aggregation point, or risk-bearing position.
+模式库是**生成和比较备选方案的工具**，不是标签库。先用目标客户、客户价值、企业能力、行业证据、现金特征和控制点六类标准筛完整个采用版本，再把 3-5 个最相关模式写入正式候选（硬门至少两个）。`pattern_screening` 至少记录采用版本、筛选标准、shortlist ID 和筛选结论，防止模型看到一个熟悉标签就直接下结论。
 
-Screen all applicable families using target-customer value, enterprise capability, observed industry evidence, cash characteristics, control points, and adoption/contract feasibility. Shortlist 3–5 candidates (at least two), and explain rejected alternatives.
+正式候选须说明：
 
-A pattern is a hypothesis about where profit concentrates. It is not a label to paste onto an operating loop.
+- 该模式的利润机制是什么；
+- 为什么适合目标客户、价值主张和企业能力；
+- 需要哪些前提与控制点；
+- 为什么放弃其他看似合理的模式；
+- 是主模式、辅助模式还是被拒绝的模式。
 
-## 3. Keep three levels separate
+不得把竞对的“研发—产品升级—客户升级—再投入”经营循环直接命名为盈利模式。应继续判断它对应的是专业产品、客户解决方案、时间利润、价值链位置或其他价值获取机制。
 
-1. **Profit pattern** — why profit tends to concentrate in a business structure.
-2. **Value-capture mechanism** — the actual payer, charging unit, price formula, pricing/contract structure, and risk sharing.
-3. **Profit economics** — how revenue minus variable/incremental cost, working capital, and risk produces contribution and cash return.
+## 三、三层结构：利润模式、价值获取机制、盈利结果
 
-Required chain:
+这三层不能混用：
 
-`customer value equation -> pattern screening -> primary/supporting pattern -> charging and contract -> unit economics -> profitability estimate -> validation test`
+1. **利润模式（profit pattern）**：解释利润为何集中到某种业务结构，例如专业产品、客户解决方案、装机基础或时间利润。
+2. **价值获取机制（monetization mechanism）**：解释具体如何收费与签约，例如“原料指数联动价 + 基础加工费 + 认证溢价”、订阅费、按效果分成或最低采购量长协。
+3. **盈利结果（profit economics）**：解释单位收入如何扣除变动成本、服务成本和资金占用后形成贡献利润与现金回报。
 
-## 4. Design sequence
+收入目标、增长桥和融资计划不属于以上三层，必须单列。一个合格设计应形成完整链条：
 
-### Customer value equation
+`客户价值等式 -> 模式库筛选 -> 主/辅利润模式 -> 具体收费与合同 -> 单位经济性 -> 盈利测算 -> 验证测试`
 
-For each target customer:
+## 四、设计顺序
 
-`customer value = incremental revenue + avoided loss + working-capital improvement + risk reduction - adoption/switching cost`
+### 1. 从客户价值出发
 
-Mark a component not applicable when justified; do not invent an amount. Translate the equation into observable metrics.
+对每个目标客户群写出可验证的价值等式：
 
-### Candidate comparison
+`客户价值 = 新增收益 + 避免损失 + 资金占用改善 + 风险下降 - 切换与采用成本`
 
-For every candidate state the mechanism, fit, evidence, assumptions, prerequisites, control points, and rejection risk. Choose a primary pattern and supporting patterns only where their customer/product/transaction roles do not conflict.
+没有客户价值证据时，不得直接假设客户愿意支付溢价。可以提出方向性假设，但必须进入 assumptions 和 validation_tests。
 
-### Value-capture mechanism
+正式 JSON 中应分别保存新增收益、避免损失、资金占用改善、风险下降、切换/采用成本、净价值逻辑和价值指标。某一项不适用时明确写“不适用及原因”，不要虚构金额。
 
-For every mechanism state linked pattern IDs, linked value-equation IDs, offer, target customer, value created, metric, payer, charging unit, price formula, pricing mechanism, contract/risk sharing, revenue timing, margin logic, and control point.
+### 2. 生成并比较候选模式
 
-### Unit economics
+从模式库、市场已验证模式和自定义组合中提出候选。每个候选都要写清机制、适配度、证据和假设；不得只输出一个候选后宣布其“唯一正确”。
 
-Choose a meaningful unit—customer, product, tonne, project, transaction, account, or lifecycle—and cover revenue formula, variable/incremental cost, contribution, working capital and cash conversion, sensitivity, and break-even/payback. If unavailable, use directional/not_available with a gap and test.
+### 3. 选择主模式与辅助模式
 
-### Separate growth and funding
+主模式决定主要利润来源，辅助模式用于扩大客户生命周期价值、稳定现金流或形成防御。组合模式必须说明各自服务的客户、产品或交易场景，避免把互相冲突的模式简单堆叠。
 
-Revenue bridges, capacity, expansion, and financing belong in `growth_and_funding_plan`. They cannot replace value-capture mechanisms, unit economics, or profitability estimates.
+### 4. 落到价值获取机制
 
-## 5. Review gate
+每个机制至少写清：关联的利润模式、关联的客户价值等式、提供物、目标客户、客户价值、价值指标、付费方、收费单位、价格公式、定价机制、合同与风险分担、收入确认时点、利润形成逻辑和控制点。
 
-Return REVISE when the design lacks customer value, candidate screening, a coherent selected architecture, payer/unit/formula/contract, margin and cash logic, unit economics, or validation for critical assumptions. The final design must answer:
+示例：工业材料的“技术溢价”不能停留在名称层面，应进一步设计为“原材料指数联动价 + 基础加工费 + 牌号/性能溢价 + 认证或供应保障溢价”，并说明哪些部分可调整、客户承诺什么采购量、质量未达标如何补偿。
 
-> For which customer, because of which measurable value, through which charging unit and contract, protected by which control point, does the enterprise earn what unit profit and cash return?
+### 5. 验证单位经济性
+
+单位可按客户、产品、吨、项目、交易或全生命周期定义。至少覆盖：
+
+- 收入公式；
+- 变动成本与增量服务成本；
+- 贡献利润逻辑；
+- 营运资金和现金转换；
+- 对价格、销量、利用率、失败率或获客成本的敏感性；
+- 盈亏平衡或回收期。
+
+数据不足时可标记 directional 或 not_available，但必须说明缺什么、影响什么以及如何验证，不能用收入桥代替盈利测算。
+
+### 6. 分离增长计划与盈利模式
+
+如果 user 有翻番、扩张或融资诉求，可在 `growth_and_funding_plan` 中单独表达收入桥、产能和资金安排。该字段不能代替 `value_capture_mechanisms`、`unit_economics` 和 `profitability_estimate`。
+
+## 五、评审硬门
+
+以下任一情况成立，盈利模式章节必须判定为 REVISE：
+
+1. 只有收入来源、销量或收入目标，没有客户价值与收费机制。
+2. 只有“高端化、规模化、平台化、生态化、技术溢价”等方向性口号。
+3. 只有成本控制、融资或研发预算。
+4. 没有记录模式库版本与筛选过程，或未比较候选模式。
+5. 选择的模式与客户选择、客户价值等式或价值主张不一致。
+6. 没有关联利润模式与客户价值等式，或没有付费方、收费单位、价格公式、定价/合同机制和风险分担。
+7. 没有说明利润形成逻辑与单位经济性，且未明确标记数据缺口与验证计划。
+8. 把收入增长测算当作盈利测算，或把毛利率改善目标当作价值获取机制。
+9. 价值获取依赖未经验证的溢价、粘性或规模假设，却没有验证指标和阈值。
+
+通过评审的盈利模式应能用一句话回答：
+
+> 对哪个客户，因为什么可量化价值，以什么收费单位和合同机制，在什么控制点保护下，获得怎样的单位利润和现金回报。

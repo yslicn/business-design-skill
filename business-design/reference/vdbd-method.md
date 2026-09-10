@@ -1,87 +1,114 @@
-# Evidence-led value-driven business design
+# VDBD 方法论速查
 
-This is an original working method for the Business Design skill. It combines value migration, customer choice, value proposition, value capture, activity scope, strategic control, and risk management into a traceable decision process.
+本文件是 business-design skill 的方法论参考，供 Report consultant（04 步业务设计）和 VDBD architect（05 步评审）查阅。VDBD（Value-Driven Business Design，价值转移业务设计）的核心思想是：利润会在价值链的不同环节之间迁移，业务设计的本质是把企业配置到价值正在流入、且自身能建立控制点的位置。整体参考 IBM BLM（Business Leadership Model）模型。
 
-## 1. Six mutually consistent design elements
+## 一、业务设计六要素
 
-**Customer selection** answers who to serve. Choose actively; do not assume every customer or value-chain segment is attractive.
+VDBD 的业务设计由六个相互咬合的要素构成，这也是 04 步报告七章节中除"市场扫描"外的主体（市场扫描是六要素的前置输入）。六个要素必须自洽——客户选择决定价值主张，价值主张决定盈利模式，三者共同决定活动范围，再由战略控制保障、风险管理兜底。评审时若发现要素之间相互矛盾，即视为对 VDBD 的重大违背。
 
-**Value proposition** answers which customer outcome to improve and why the enterprise can win differently from competitors.
+**客户选择**：回答"为谁创造价值"。不是所有客户都值得服务，要基于价值链分析识别出高价值目标客户，主动放弃不匹配的客户群。
 
-**Profit model / value capture** answers how part of created customer value becomes sustainable profit. It must reach payer, charging unit, price formula, contract, unit economics, and control points.
+**价值主张**：回答"为客户解决什么、凭什么赢"。针对目标客户的痛点或诉求，给出与竞争对手差异化的产品或服务。
 
-**Scope of activities** states what the enterprise will and will not do. Explicit trade-offs concentrate resources.
+**盈利模式**：回答“如何获取价值”，即企业如何把为目标客户创造的价值持续转化为自身利润。必须比较候选利润模式，并落到客户价值、价值指标、付费方、收费单位、定价与合同、单位经济性和控制点；收入增长、产品高端化、降本或融资安排不能单独构成盈利模式。详见 `reference/profit-models.md`。
 
-**Strategic control** identifies what prevents the profit from being competed away: assets, standards, relationships, cost position, technology, data, brand, or network effects.
+**活动范围**：回答"做什么、不做什么"。明确企业的业务边界，取舍同样重要——清楚界定不做的业务，才能把资源集中在价值主张上。
 
-**Risk management** identifies what could invalidate the design and how to detect and respond to it.
+**战略控制**：回答"如何守住利润"。识别能长期保障竞争力与盈利能力的控制点，如品牌、成本优势、规模、网络效应、技术壁垒、客户关系。
 
-The six elements must agree: customer choice drives the value proposition; both drive value capture and activity scope; control protects the chosen economics; risk management tests the whole design.
+**风险管理**：回答"什么会让这套设计失效"。从政策、法律、行业入侵等维度预判风险并给出应对。
 
-## 2. Five-lens market scan
+## 二、IBM BLM 五看
 
-Use five lenses before design:
+五看是市场扫描章节的分析框架，用于在动手设计前看清外部环境与自身位置。
 
-1. **Industry direction** — demand, technology, policy, value-chain structure, and profit-pool migration.
-2. **Markets and customers** — segments, growth, needs, pain, payment ability, and buying behavior.
-3. **Competition** — players, moves, economics, barriers, and unmet space.
-4. **Enterprise position** — resources, capabilities, channels, assets, relationships, and constraints.
-5. **Opportunity** — where value is moving and where the enterprise can build a defensible position.
+**看行业趋势**：行业往哪里走，技术、需求、价值链结构正在发生什么变化，利润池是否在迁移。
 
-These are generic analytical lenses. Do not reproduce a third party's proprietary diagram or training text.
+**看市场客户**：客户是谁、如何分层、需求与痛点是什么、哪些客户群在增长。
 
-## 3. Value-chain opportunity and segment choice
+**看竞争**：主要竞争对手是谁、它们的打法与近期动向、竞争格局的空白点在哪里。
 
-Separate two questions: which segments have attractive economics, and whether this enterprise can win there. Highest margin is not automatically the best entry point.
+**看自己**：企业自身的资源、能力、现有业务位置与短板，相对竞争的优劣势。
 
-1. Map the value chain and define boundaries.
-2. Normalize geography, period, currency, revenue boundary, and profit definition.
-3. Estimate comparable revenue, margin, and profit pool where evidence permits.
-4. Assess growth and value migration.
-5. Assess players, concentration, entry barriers, and prevailing business models.
-6. Assess enterprise capability fit, synergy, feasibility, and risk.
+**看机会**：综合前四看，识别值得进入的战略机会点——价值正在流入、且企业有能力建立控制点的位置。
 
-### Default scoring
+## 三、价值链利润池与环节选择方法
 
-Score each dimension from 1 to 5. Default weights:
+这是 03 步市场洞察的核心方法，也是 04 步判断价值链机会的依据。必须区分两个问题：**哪个环节拥有更有吸引力的利润池**，以及 **user 是否有能力在该环节获胜**。利润率最高不等于最值得进入；最终建议必须同时考虑市场吸引力和企业胜任权。
 
-| Dimension | Weight | Meaning of 5 |
-|---|---:|---|
-| Profit-pool size | 20% | Large accessible current profit pool |
-| Growth and value migration | 20% | Profit pool grows and value flows into the segment |
-| Competitive attractiveness | 15% | Defensible opening with manageable competition |
-| Capability fit | 20% | Critical capabilities already exist or are economical to build |
-| Business synergy | 15% | Strong synergy with customers, channels, brand, technology, or assets |
-| Feasibility and risk | 10% | Affordable investment, clear path, manageable risk |
+第一步**识别价值链环节**：把行业从上游到下游拆成若干关键环节，明确每个环节做什么、在链条中的位置。
 
-The first three form market attractiveness (55%); the last three form enterprise fit (45%). A user may change weights, but the reason and arithmetic must remain visible.
+第二步**统一分析口径**：先锁定地域、年份、币种、价值链边界和利润率口径。不同年份、不同地域、毛利率与净利率不得直接比较；无法统一时必须标注"不可直接比较"。
 
-Formula:
+第三步**测算收入、利润率与利润池**：分别估算每个环节的收入规模和可比利润率；具备可比数据时，用"收入规模 × 同口径利润率"估算利润池规模。收入规模、利润率和利润池是三个不同概念，不能只凭利润率判断机会。
 
-`profit pool × 0.20 + growth/value migration × 0.20 + competitive attractiveness × 0.15 + capability fit × 0.20 + synergy × 0.15 + feasibility/risk × 0.10`
+第四步**判断增长与价值迁移**：结合需求、技术、政策、客户行为和商业模式变化，判断利润池是扩大、稳定还是收缩，以及价值正在流入还是流出该环节。
 
-Preserve raw scores, market-attractiveness contribution, enterprise-fit contribution, total, dimension rationale, evidence, assumptions, and an overall decision. Scores support judgment; they do not replace it. If evidence cannot support precise scores, research further or use explicitly directional judgment.
+第五步**盘点玩家、竞争与商业模式**：列出主要玩家及财务表现，判断集中度、进入壁垒和竞争强度；总结各环节如何赚钱、主要客户是谁，为盈利模式设计提供输入。
 
-## 4. Traceability
+第六步**评估企业胜任权**：基于 requirement.json 中的现有业务、资源、能力与约束，评估 user 进入或强化该环节的能力匹配、业务协同、战略控制潜力以及投入与风险。不得仅因某环节利润率高就建议进入。
 
-Use the chain:
+### 环节选择评分
 
-`Sxx source -> Exx evidence -> business conclusion evidence_ids`
+对候选环节按 1-5 分评分，5 分代表最有利。默认权重如下；如 user 明确给出不同战略优先级，可调整权重，但必须记录调整理由。
 
-Critical recommendations that are not source facts cite `Axx` assumptions. Evidence types are verified, triangulated, and estimated. Estimated evidence includes a reproducible basis. Insufficient evidence becomes a data gap; never create a false evidence ID.
+| 维度 | 权重 | 5 分含义 |
+|------|------|----------|
+| 利润池规模 | 20% | 当前可获取利润池大 |
+| 增长与价值迁移 | 20% | 利润池快速增长且价值持续流入 |
+| 竞争吸引力 | 15% | 竞争可控、进入窗口和结构性空白明确 |
+| 能力匹配 | 20% | user 已具备关键能力或能低成本补齐 |
+| 业务协同 | 15% | 与客户、渠道、品牌、技术或资产高度协同 |
+| 可行性与风险 | 10% | 投入可承受、实施路径清晰、风险可控 |
 
-## 5. High-value customer identification
+前三项构成**市场吸引力（55%）**，后三项构成**企业胜任权（45%）**。加权得分用于横向比较，不替代顾问判断；最终建议还必须说明关键证据、假设和数据缺口。证据不足时可以做定性判断，但不得制造精确分数。
 
-Create mutually exclusive, collectively useful customer segments based on factors such as size, need, buying behavior, or value-chain position. Then compare payment capacity/financial health and future demand growth. Choose target segments only after connecting their needs, the user's capabilities, and defensible value capture.
+加权分公式为：`利润池规模×0.20 + 增长与价值迁移×0.20 + 竞争吸引力×0.15 + 能力匹配×0.20 + 业务协同×0.15 + 可行性与风险×0.10`，保留两位小数。证据不足以支撑评分时，优先回到 03 补研究；若 user 接受方向性判断，可以使用保守评分，但必须列出 assumption_ids 和 data gap，不能伪装成精确测算。
 
-## 6. Chapter map
+在正式产物中不得只保存总分。`business_design.json` 必须同时保存：
 
-| Chapter | Primary method |
-|---|---|
-| Market scan | Five-lens scan |
-| Customer selection | Profit pool + market attractiveness / enterprise fit + segmentation |
-| Value proposition | Competitor response + differentiated customer outcome |
-| Profit model | Pattern screening + customer value equation + value-capture mechanism + unit economics |
-| Scope of activities | Explicit do / do-not-do trade-offs |
-| Strategic control | Mechanisms that protect economics |
-| Risk management | Risk-response-validation links |
+- `selection_method`：分组权重、六维权重、公式和权重理由；
+- `market_attractiveness_contribution`：前三项按原始权重加总，默认最大 2.75；
+- `enterprise_fit_contribution`：后三项按原始权重加总，默认最大 2.25；
+- `weighted_score`：两个贡献相加，默认满分 5；
+- `score_rationale`：逐维说明证据、假设和判断；
+- `overall_assessment`：得分之外的顾问结论与决策含义。
+
+例如某环节六维得分为 `5/5/4/4/5/4`，则市场吸引力贡献为 `5×0.20+5×0.20+4×0.15=2.60`，企业胜任权贡献为 `4×0.20+5×0.15+4×0.10=1.95`，总分为 `4.55`。Visual consultant 必须把评分方法、所有环节的两个贡献与总分放入正文；评分理由可拆成连续详情页，不得用一张总分图声称覆盖全部评分信息。
+
+所有量化数据必须来自 deep-research 的搜索结果。无法直接核实的数据须标注为估算，给出估算逻辑和证据编号；无法形成合理估算时标注 unknown，不得用虚假数字填满结构。
+
+## 四、轻量证据链
+
+为避免多 Agent 交接时丢失数据来源，市场研究和业务设计统一使用四层追溯关系：
+
+```
+Sxx 来源 -> Exx 证据 -> 业务结论的 evidence_ids -> slide_input/PPT 页面的证据标记
+```
+
+- **来源 Sxx**：记录标题、发布者、URL、发布日期和访问日期。
+- **证据 Exx**：记录可被复述的事实或估算、置信度、对应来源；估算还要记录计算逻辑。
+- **业务结论**：关键判断列出使用的 `evidence_ids`；若依赖假设，同时列出 `assumption_ids`。
+- **页面证据标记**：`slide_input.json` 保留关键数据和结论的证据编号；证据附录呈现 `Exx -> Sxx` 映射，PPT 可在页脚、正文或备注中呈现。
+
+证据类型限定为 `verified`（单一可靠来源直接支持）、`triangulated`（两个及以上来源交叉支持）、`estimated`（依据来源进行推算）。来源不足则进入 `data_gaps`，不创建虚假证据。
+
+## 五、高价值目标客户识别方法
+
+客户选择章节要先做客户群划分，再从中识别高价值目标客户。
+
+**客户群划分**：用典型的咨询分类方法（如按规模、按需求类型、按购买行为、按价值链位置）把目标环节的客户切成若干互斥的客户群，描述每群的特征。划分要 MECE——相互独立、完全穷尽。
+
+**高价值客户识别**：在客户群基础上，用两个核心维度筛选高价值目标客户。一是**财务健康度**——客户自身是否有支付能力、是否值得长期投入；二是**需求增长性**——客户的需求是否在增长、是否代表未来方向。两者俱佳的客户群即为目标客户，随后深入分析这些客户当前与未来的诉求和痛点，作为价值主张的输入。
+
+## 六、章节与方法的对应关系
+
+| 报告章节 | 主要方法 |
+|----------|----------|
+| 市场扫描 | BLM 五看 |
+| 客户选择 | 利润池分析 + 环节吸引力/企业胜任权评估 + 客户群划分 + 高价值客户识别 |
+| 价值主张 | 竞争对手解决思路对标 + 差异化设计 |
+| 盈利模式 | 候选利润模式比较 + 价值获取机制 + 单位经济性 + 盈利测算；增长/融资计划单列 |
+| 活动范围 | 业务边界取舍（做/不做） |
+| 战略控制 | 控制点识别（品牌/成本/规模/网络效应/技术/客户关系） |
+| 风险管理 | 政策/法律/行业入侵等维度的风险与应对 |

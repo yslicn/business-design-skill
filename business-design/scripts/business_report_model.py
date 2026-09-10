@@ -153,8 +153,8 @@ def _iter_blocks(blocks: Iterable[ReportBlock]) -> Iterable[ReportBlock]:
 
 
 def _is_metadata(key: str) -> bool:
-    # ``library_version`` is kept as a visible business-design qualifier; the
-    # remaining METADATA_KEYS are lineage or
+    # ``library_version`` is kept as a visible business-design qualifier (for
+    # example, “Mercer 21 模式”); the remaining METADATA_KEYS are lineage or
     # renderer control fields and must not become report prose.
     return (key in METADATA_KEYS and key != "library_version") or key.endswith("_id") or key.endswith("_ids")
 

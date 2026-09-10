@@ -2,13 +2,17 @@
 
 An evidence-led, multi-agent business-design workflow that simulates a small strategy-consulting team while remaining usable with lower-cost language models.
 
-The skill's core value is the business viewpoint and supporting content, not a specific slide or document renderer. Its stable outputs are:
+The skill's core value is the business viewpoint and supporting content, not a specific slide or document renderer. Since v3 the default deliverables are a consultant-written long-form report with embedded consulting-style exhibits:
 
-- `business_design.json` — canonical, machine-verifiable business design;
-- `business_design.md` — deterministic human-readable projection with source hash;
-- `content_quality_report.json` — fidelity and traceability audit.
+- `business_design.md` — the reviewed narrative manuscript and single source of truth for the report text;
+- `business_design.docx` — same-content editable Word report with a consulting layout: cover page, table of contents, page numbers, captions, and deterministically rendered exhibit charts (bar benchmarks, scoring, funnels, priority matrices, roadmaps, contribution bridges, risk maps, value-migration flows);
+- `business_design.json` — canonical structured analysis draft (scoring, profit-model candidates, mechanisms, evidence, assumptions) for deterministic validation and reuse;
+- `exhibit_plan.json` + `exhibits/` — exhibit plan synced with the manuscript; PNGs are rendered by `render_report_exhibits.py` with every number traceable to the evidence ledger;
+- `content_quality_report.json` — content review and delivery audit.
 
-HTML, Word, PDF, and PowerPoint are optional downstream presentation formats. For a polished executive report, the project recommends passing the generated Markdown to a capable document-design agent such as Claude Cowork and retaining the JSON/Markdown as the complete record.
+Every layer enforces traceability: facts cite evidence-ledger entries `[Exx]` (with `supporting_detail` preserved from the research report), assumptions are numbered `[Axx]`, estimates are labeled, and unknowns are never written as zero.
+
+HTML, PDF, and PowerPoint remain optional downstream presentation formats handled by other skills. For a polished interactive report, pass the full Markdown plus the analysis draft to a capable presentation skill (see `business-design/reference/presentation-handoff.md`).
 
 **Important output boundary:** this skill generates and validates the business-design content in JSON and Markdown. It does **not** generate the showcased HTML reports. The example HTML reports are separate presentation artifacts created by Claude Cowork from the Markdown produced by this skill. They demonstrate one possible downstream presentation workflow, not a built-in HTML renderer or a guaranteed Claude Cowork output.
 
@@ -24,11 +28,13 @@ OpenCode:    ~/.config/opencode/skills/business-design
 
 OpenCode paths can vary by installation; use the directory documented by your host. The workflow is plain Markdown, JSON Schema, and Python, so other agents can use it by loading `business-design/SKILL.md`.
 
-Install the only Python dependency:
+Install the Python dependencies:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
+
+Word export additionally requires `pandoc` on the host; exhibit rendering requires `matplotlib` (in `requirements.txt`). Chinese rendering defaults to PingFang SC on macOS and Noto Sans CJK elsewhere.
 
 ## Use
 
@@ -48,16 +54,16 @@ The skill can call any installed deep-research capability. It does not bundle or
 
 ## Presentation
 
-See `business-design/reference/presentation-export.md`. Optional presentation tools are not included and are not required to complete the business design.
+The Word report with embedded exhibits is the default readable deliverable. For slides, HTML, or PDF decks, see `business-design/reference/presentation-handoff.md`; optional presentation tools are not included and are not required to complete the business design. Do not compress the manuscript into slide bullets before handing off.
 
 The published examples use this production chain:
 
 ```text
-Business Design skill -> business_design.json + business_design.md
+Business Design skill -> business_design.json + business_design.md + business_design.docx
 Claude Cowork         -> presentation-style HTML based on business_design.md
 ```
 
-The JSON and Markdown remain the canonical outputs. The HTML is a non-canonical communication layer and may reorganize or summarize content for readability.
+The JSON, Markdown, and DOCX remain the canonical outputs. The HTML is a non-canonical communication layer and may reorganize or summarize content for readability.
 
 ## Examples
 
@@ -82,7 +88,7 @@ Licensed under the [Apache License 2.0](LICENSE).
 
 ## 中文说明
 
-这是一个以证据、独立评审和多 Agent 协作为核心的业务设计 skill。正式交付是结构化 JSON、由 JSON 确定性生成的 Markdown，以及内容质量报告。HTML、Word、PDF、PPT 都是可选呈现层，不影响核心业务设计是否完成。
+这是一个以证据、独立评审和多 Agent 协作为核心的业务设计 skill。自 v3 起默认交付：顾问撰写的完整报告正文（`business_design.md`）、同内容咨询版式 Word 报告（封面/目录/页码/确定性渲染的展项图表）、结构化分析底稿 `business_design.json` 与内容质量报告。事实一律可回溯（证据台账 `[Exx]`、假设 `[Axx]`、估算显式标注、未知不写成 0）。HTML、PDF、PPT 仍是可选下游呈现层，交独立展示 skill 处理。
 
 **样例生成边界：**样例中的 `business_design.json` 和 `business_design.md` 由本 skill 生成并校验；HTML 咨询报告是在此之后，由 Claude Cowork 基于该 Markdown 另行制作。本 skill 不内置或承诺生成样例中的 HTML 效果，HTML 仅代表一种可选的下游呈现方式。
 

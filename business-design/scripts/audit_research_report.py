@@ -133,7 +133,7 @@ def duplicate_metrics(body_text: str) -> dict[str, float | int]:
     }
 
 
-def audit(path: Path, minimum: int = DEFAULT_MINIMUM, maximum: int = DEFAULT_MAXIMUM) -> dict[str, Any]:
+def audit(path: Path, minimum: int = DEFAULT_MINIMUM, maximum: int = DEFAULT_MAXIMUM, *, advisory_length: bool = False) -> dict[str, Any]:
     text = extract_text(path)
     body_text, reference_text = split_body_references(text)
     body_counts = count_effective_length(body_text)
@@ -162,7 +162,8 @@ def audit(path: Path, minimum: int = DEFAULT_MINIMUM, maximum: int = DEFAULT_MAX
         },
         "length_passed": length_passed,
         "density_passed": density_passed,
-        "passed": length_passed and density_passed,
+        "length_gate": not advisory_length,
+        "passed": density_passed and (body_counts["effective_count"] > 0 if advisory_length else length_passed),
     }
 
 
@@ -172,11 +173,12 @@ def main() -> int:
     parser.add_argument("--output", type=Path, help="输出 research_report_audit.json")
     parser.add_argument("--minimum", type=int, default=DEFAULT_MINIMUM)
     parser.add_argument("--maximum", type=int, default=DEFAULT_MAXIMUM)
+    parser.add_argument("--advisory-length", action="store_true", help="v3：字数仅诊断，保留非空正文与重复内容检查；充分性由独立评审判断")
     args = parser.parse_args()
     if args.minimum <= 0 or args.maximum < args.minimum:
         parser.error("minimum/maximum 范围无效")
     try:
-        result = audit(args.report, args.minimum, args.maximum)
+        result = audit(args.report, args.minimum, args.maximum, advisory_length=args.advisory_length)
         if args.output:
             args.output.write_text(
                 json.dumps(result, ensure_ascii=False, indent=2) + "\n",

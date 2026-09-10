@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MarketInsightReview",
-  "description": "03e Report consultant 对研究报告与 market_insight.json 的独立输入质量评审契约。",
+  "description": "03e Report consultant 对研究报告与 market_insight.json 的独立输入质量评审契约。 schema 1.1 的字数范围仅为诊断；PASS 以覆盖、证据和业务设计就绪度为门，并须给出充分性理由。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,11 +20,17 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0"
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
     },
     "status": {
       "type": "string",
-      "enum": ["PASS", "REVISE"]
+      "enum": [
+        "PASS",
+        "REVISE"
+      ]
     },
     "research_report_path": {
       "$ref": "#/definitions/nonEmptyString"
@@ -35,14 +41,36 @@
     "report_length": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["audit_path", "counting_method", "effective_count", "minimum", "maximum", "passed"],
+      "required": [
+        "audit_path",
+        "counting_method",
+        "effective_count",
+        "minimum",
+        "maximum",
+        "passed"
+      ],
       "properties": {
-        "audit_path": {"$ref": "#/definitions/nonEmptyString"},
-        "counting_method": {"$ref": "#/definitions/nonEmptyString"},
-        "effective_count": {"type": "integer", "minimum": 0},
-        "minimum": {"type": "integer", "const": 10000},
-        "maximum": {"type": "integer", "const": 15000},
-        "passed": {"type": "boolean"}
+        "audit_path": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "counting_method": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "effective_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum": {
+          "type": "integer",
+          "const": 10000
+        },
+        "maximum": {
+          "type": "integer",
+          "const": 15000
+        },
+        "passed": {
+          "type": "boolean"
+        }
       }
     },
     "research_coverage": {
@@ -58,13 +86,27 @@
         "data_gaps_disclosed"
       ],
       "properties": {
-        "value_chain_metrics_complete": {"type": "boolean"},
-        "players_and_competition_complete": {"type": "boolean"},
-        "business_models_complete": {"type": "boolean"},
-        "trends_policy_competitors_complete": {"type": "boolean"},
-        "company_specific_inputs_sufficient": {"type": "boolean"},
-        "profit_model_inputs_sufficient": {"type": "boolean"},
-        "data_gaps_disclosed": {"type": "boolean"}
+        "value_chain_metrics_complete": {
+          "type": "boolean"
+        },
+        "players_and_competition_complete": {
+          "type": "boolean"
+        },
+        "business_models_complete": {
+          "type": "boolean"
+        },
+        "trends_policy_competitors_complete": {
+          "type": "boolean"
+        },
+        "company_specific_inputs_sufficient": {
+          "type": "boolean"
+        },
+        "profit_model_inputs_sufficient": {
+          "type": "boolean"
+        },
+        "data_gaps_disclosed": {
+          "type": "boolean"
+        }
       }
     },
     "data_integrity": {
@@ -79,17 +121,29 @@
         "unsupported_claims"
       ],
       "properties": {
-        "all_quantitative_claims_traceable": {"type": "boolean"},
-        "verified_claims_supported": {"type": "boolean"},
-        "estimates_labeled_and_reproducible": {"type": "boolean"},
-        "facts_estimates_assumptions_separated": {"type": "boolean"},
+        "all_quantitative_claims_traceable": {
+          "type": "boolean"
+        },
+        "verified_claims_supported": {
+          "type": "boolean"
+        },
+        "estimates_labeled_and_reproducible": {
+          "type": "boolean"
+        },
+        "facts_estimates_assumptions_separated": {
+          "type": "boolean"
+        },
         "suspected_fabrications": {
           "type": "array",
-          "items": {"$ref": "#/definitions/nonEmptyString"}
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
         },
         "unsupported_claims": {
           "type": "array",
-          "items": {"$ref": "#/definitions/nonEmptyString"}
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
         }
       }
     },
@@ -105,58 +159,134 @@
         "summary"
       ],
       "properties": {
-        "market_attractiveness_scoring_ready": {"type": "boolean"},
-        "customer_selection_ready": {"type": "boolean"},
-        "value_proposition_ready": {"type": "boolean"},
-        "profit_model_design_ready": {"type": "boolean"},
-        "limitations_are_actionable": {"type": "boolean"},
-        "summary": {"$ref": "#/definitions/nonEmptyString"}
+        "market_attractiveness_scoring_ready": {
+          "type": "boolean"
+        },
+        "customer_selection_ready": {
+          "type": "boolean"
+        },
+        "value_proposition_ready": {
+          "type": "boolean"
+        },
+        "profit_model_design_ready": {
+          "type": "boolean"
+        },
+        "limitations_are_actionable": {
+          "type": "boolean"
+        },
+        "summary": {
+          "$ref": "#/definitions/nonEmptyString"
+        }
       }
     },
     "revision_route": {
       "type": "string",
-      "enum": ["none", "supplement_research", "restructure_market_insight"]
+      "enum": [
+        "none",
+        "supplement_research",
+        "restructure_market_insight"
+      ]
     },
     "issues": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["category", "severity", "issue", "required_action"],
+        "required": [
+          "category",
+          "severity",
+          "issue",
+          "required_action"
+        ],
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["length", "coverage", "source", "fabrication_risk", "estimation", "consistency", "design_readiness"]
+            "enum": [
+              "length",
+              "coverage",
+              "source",
+              "fabrication_risk",
+              "estimation",
+              "consistency",
+              "design_readiness"
+            ]
           },
           "severity": {
             "type": "string",
-            "enum": ["blocking", "major", "minor"]
+            "enum": [
+              "blocking",
+              "major",
+              "minor"
+            ]
           },
-          "issue": {"$ref": "#/definitions/nonEmptyString"},
-          "required_action": {"$ref": "#/definitions/nonEmptyString"}
+          "issue": {
+            "$ref": "#/definitions/nonEmptyString"
+          },
+          "required_action": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
         }
       }
     },
     "review_summary": {
       "$ref": "#/definitions/nonEmptyString"
+    },
+    "sufficiency_rationale": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"status": {"const": "PASS"}}},
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PASS"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "revision_route": {"const": "none"}
+          "revision_route": {
+            "const": "none"
+          }
         }
       }
     },
     {
-      "if": {"properties": {"status": {"const": "REVISE"}}},
+      "if": {
+        "properties": {
+          "status": {
+            "const": "REVISE"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "revision_route": {"enum": ["supplement_research", "restructure_market_insight"]},
-          "issues": {"minItems": 1}
+          "revision_route": {
+            "enum": [
+              "supplement_research",
+              "restructure_market_insight"
+            ]
+          },
+          "issues": {
+            "minItems": 1
+          }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.1"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "sufficiency_rationale"
+        ]
       }
     }
   ],

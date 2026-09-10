@@ -1,149 +1,78 @@
 ---
 name: business-design
-description: Evidence-led multi-agent business design for a specific company or segment. Produces a validated business_design.json and a deterministic, source-hashed Markdown report; presentation formats are optional downstream exports.
+description: 基于 VDBD（价值转移业务设计，参考 IBM BLM）开展企业业务设计、客户选择、价值主张和盈利模式设计。默认交付有明确观点、充分论证和证据支持的 Markdown 正文及同内容 DOCX；JSON 用于结构化分析与校验。PPT、HTML 等可视化交由独立 skill 按模板生产。
 ---
 
 # Business Design
 
-> Release line: 1.0 content-first
+> Skill version: 3.0（内容报告优先）
 
-Use this skill when the user wants a researched business design, business-model redesign, value-capture design, or value-migration analysis for a specific company or clearly defined market segment.
+## 交付边界
 
-## Completion contract
+本 skill 负责研究、业务判断、完整论证、独立评审与长文报告。默认面向用户交付：
 
-The only canonical business content is `business_design.json` (schema 1.3). Core completion requires:
+- `business_design.md`：顾问撰写并经独立评审的完整报告，是叙述正文的唯一母稿。
+- `business_design.docx`：由同一 MD 转换的可编辑阅读版；完整保留正文、表格、来源与限定条件，并带咨询版式（封面、目录、页码）与确定性渲染的展项图表（`exhibit_plan.json` 规划、`render_report_exhibits.py` 渲染）。
 
-- `business_design.json`: reviewed, schema-valid source of truth;
-- `business_design.md`: deterministic projection of the JSON with its SHA-256 embedded;
-- `content_quality_report.json`: PASS for schema, content fidelity, protected numbers, qualifiers, evidence IDs, assumption IDs, and source hash.
+`business_design.json`（沿用 schema 1.3）是内部结构化分析底稿，保存评分、候选模式、机制、证据和假设关系，供确定性校验与复用。JSON 不再作为报告全部措辞的容器；不能把 JSON 字段列表机械当成报告。MD 可以充分解释因果、比较和取舍，事实一律可回溯：优先引用证据台账 `[Exx]`，研究报告中有而台账未收录的事实可进正文（引 `[Rxx]` 并在定稿前补录台账），但不得与 JSON 出现矛盾的决策、数字、假设。业务结论变更时先同步底稿和正文，再共同评审。DOCX 不独立编辑业务内容。
 
-HTML, DOCX, PDF, PPTX, slide input, and other presentation artifacts are optional exports. They may summarize the core, but they must never change core status or become a second source of business truth.
+PPT、HTML、网页、PDF 和展示模板不是默认交付，也不是核心完成条件；Word 报告内嵌的展项图表属于默认交付（数据图表与版式，不是页面模板）。只有用户明确需要时才交给另一个可用 skill 做演示类交付；不在本 skill 中设计页面布局或 PPT 模板。用户指定交付形式时遵循其要求。
 
-## Multi-agent operating model
+## 工作流程
 
-Keep the independent roles. Low-cost models benefit from role isolation and explicit review gates.
+1. **明确决策问题**：记录 `input.*` 和 `requirement.json`，明确公司、诉求、业务边界、地域、期间与资源约束。只对会改变判断的缺失信息提问，其他假设明确记录。
+2. **研究和证据**：按 `agents/analyst.md` 形成 `research_spec.json`；调用可用的 deep-research，或直接完成同等范围的可追溯研究。保留 `research_report.*`、`market_insight.json`、`research_report_audit.json`。复用仍有效的已给研究。重点是价值链利润迁移、客户付费逻辑、竞争与企业胜任权，不能以篇幅或来源数量替代输入就绪度。
+3. **独立输入评审**：Report consultant 按 `agents/report-consultant.md` 输出 schema 1.1 的 `insight_review.json`（字数仅诊断，记录输入充分性理由）；证据或研究缺口回研究，结构化错配只修底稿。输入通过后才能开展正式设计。
+4. **设计并写完整报告**：Report consultant 以 `market_insight.json` 和 `research_report.md` 为事实来源，阅读 `reference/vdbd-method.md`、`reference/profit-models.md` 和 `reference/content-report-contract.md`，完成 JSON 分析底稿、MD 正文和 `exhibit_plan.json` 展项计划（观点式标题、数据取自台账/底稿）。先形成公司特定的结论与论证；写每章前先建章级证据池（从台账全字段与研究报告提取该章相关事实），再按结构化骨架成文：必答决策问题、核心判断、带编号与数字的论据、论证、取舍与边界。不先规定页数、字数密度、卡片数量或一页一观点。
+5. **独立业务与正文评审**：VDBD Architect 按 `agents/vdbd-architect.md` 同时评审 JSON、MD 与证据，落盘 `review_notes.md`。检验观点是否值得管理层据此行动、论证是否充分、有哪些反例和失败条件，而不只看字段齐全。未通过则定向修改，再复审。
+6. **生成 DOCX 并验收内容**：先渲染展项再转换正文（命令见下）；检查展项嵌入数、DOCX 内容保真和实际可读性，形成 `content_quality_report.json`，更新项目状态后执行 `python3 scripts/validate_artifacts.py --state <project>/project_state.json` 检查状态一致性。标题层级、正文、展项图注、比较表、目录和分页服务长文阅读；不能用拆短正文、缩字、字段索引或重复附录解决排版。
+7. **交付与反馈**：给用户 MD、DOCX 链接及核心判断。`waiting_for_user` 表示质量通过、待反馈；只有用户明确验收才置 `completed`。事实问题回研究，策略与论证问题回步骤 4，DOCX 版式问题只回步骤 6。
 
-| Role | Responsibility |
-|---|---|
-| VDBD Architect | Clarifies the assignment; independently reviews the final business design |
-| Analyst | Defines research requirements; structures the sourced market insight |
-| Research agent or external research skill | Produces the 10,000–15,000-character sourced research report |
-| Report Consultant | Reviews research readiness; designs the business model and value-capture architecture |
+步骤沿用项目状态的 01–07 编号，其中步骤 03 包含研究与输入评审，04 为设计，05 为业务评审，06 为交付，07 为用户验收。
 
-On hosts that support subagents, run each role in a separate agent context. Otherwise use separate tasks/sessions. The author of an artifact must not perform its independent review.
+独立评审使用与产出者隔离的 subagent 上下文：研究输入由独立 Report consultant 评审，设计与正文由独立 Architect 评审。传入本轮必要材料即可。宿主不支持隔离时如实标记 `independent_review=pending`，可以交草稿，但不能伪称已通过独立评审。不以重复无变化的审计消耗时间；只修复具体问题。
 
-## Seven-step workflow
+## 默认执行入口
 
-### 01 — Capture the request
-
-Save the user's original input in the project directory. Do not infer a different company, industry, or strategic objective.
-
-### 02 — Clarify the assignment
-
-Run the VDBD Architect instructions in `agents/vdbd-architect.md`. Produce `requirement.json`. If `ready=false`, ask the user the generated clarifying questions and repeat this step.
-
-### 03 — Build and approve market insight
-
-1. Run the Analyst instructions in `agents/analyst.md` section 3a to create `research_spec.json`.
-2. Use an available deep-research capability to produce `research_report.*`. If none is installed, ask the user to supply a sourced report; do not fabricate research.
-3. Audit the report:
+从本 skill 目录执行；Python 需 `python-docx`，转换需 `pandoc`。使用宿主已有依赖；缺失则报告具体缺项，不自动安装。
 
 ```bash
-python3 scripts/audit_research_report.py \
-  <project>/research_report.html \
-  --output <project>/research_report_audit.json
-```
-
-The effective body must be 10,000–15,000 Chinese characters or an equivalent substantive length in another language. References, hidden text, and repeated content do not count.
-
-4. Run Analyst section 3d to produce `market_insight.json`.
-5. Run the Report Consultant's independent input review to produce `insight_review.json`.
-6. If review status is `REVISE`, route exactly as specified: supplement research or restructure the insight. Do not continue to business design until status is `PASS`.
-
-### 04 — Design the business
-
-Run the Report Consultant instructions in `agents/report-consultant.md`. Produce only `business_design.json` conforming to `schemas/business_design.schema.json`.
-
-The design must contain seven chapters and six mutually consistent design elements: customer selection, value proposition, profit/value-capture model, scope of activities, strategic control, and risk management, preceded by market scan.
-
-Hard requirements include:
-
-- segment choice uses market attractiveness and enterprise fit, not profit margin alone;
-- default weights are 55% market attractiveness and 45% enterprise fit, unless a reasoned alternative is documented;
-- profit model means a complete value-capture architecture, not a revenue target, premiumization slogan, cost program, or funding plan;
-- facts, estimates, assumptions, recommendations, and data gaps remain distinct;
-- every evidence and assumption reference resolves.
-
-### 05 — Independent design review
-
-Run the VDBD Architect review in a fresh context. Produce `review_notes.md`. If the conclusion is `REVISE`, return only the requested issues to step 04 and repeat the independent review.
-
-### 06 — Validate and publish the core content
-
-Run:
-
-```bash
+python3 scripts/audit_research_report.py <project>/research_report.md \
+  --advisory-length --output <project>/research_report_audit.json
 python3 scripts/validate_artifacts.py \
   --market <project>/market_insight.json \
   --insight-review <project>/insight_review.json \
   --business <project>/business_design.json
-
-python3 scripts/render_business_design.py \
-  <project>/business_design.json \
-  <project>/business_design.md
-
-python3 scripts/audit_business_design_md.py \
-  --business <project>/business_design.json \
-  --markdown <project>/business_design.md \
-  --output <project>/content_quality_report.json
+python3 scripts/render_report_exhibits.py <project>/exhibit_plan.json <project>/exhibits \
+  --business <project>/business_design.json --market <project>/market_insight.json
+python3 scripts/export_content_report.py \
+  <project>/business_design.md <project>/report-vN \
+  --title "<报告标题>" --subtitle "<副题>" --company "<公司>" --date "<日期>"
 ```
 
-All three commands must PASS. Never hand-edit the generated Markdown. If the presentation needs better wording or structure, revise and re-review the JSON, then regenerate.
+转换器只负责生成同内容 MD、DOCX 和 `report_manifest.json`，不生成业务观点，也不自动宣称内容质量 PASS。每次使用新输出目录，避免覆盖历史交付。完成 DOCX 渲染检查后，按 `reference/content-report-contract.md` 写质量报告；其记录绑定本次 MD、JSON、DOCX 的 SHA-256。内容修改会使已有评审与导出失效，需要重审受影响部分并重新转换。
 
-### 07 — User acceptance
+## 内容质量标准
 
-Ask the user to approve the business viewpoints and content using JSON and Markdown. Route changes by cause:
+- 七章形成一条能解释的决策链：市场扫描 → 客户选择 → 价值主张 → 盈利模式 → 活动范围 → 战略控制 → 风险管理。
+- 每章结构化完备：开篇列必答决策问题，显式给出核心判断，论据带证据编号与具体数字，论证完成事实到判断的推理，收尾交代替代方案与成立条件。不要把五个标签机械复制成所有章节的同构模板。
+- 每个核心判断至少两个独立量化证据或显式数据缺口；市场、客户、竞争的论断落到具体数字（规模、增速、份额、价格、利润率之一），不允许只剩定性结论。
+- 客户选择保留六维评分、55%/45% 默认权重或合理替代权重、可复算贡献及取舍；分数是比较依据，不是客观事实。
+- 盈利模式保留模式库筛选、候选比较、客户价值等式、价值获取机制、收费合同、单位经济性、敏感性与验证测试。增长或融资计划不能代替盈利模式。
+- 内容丰富意味着影响决策的信息充分；不等于重复观点、堆行业背景、扩充同义句或把所有资料塞进正文，同样不等于把研究报告的量化论据压缩成定性结论。研究与台账中会改变判断权重的事实，要么进入正文支撑论证，要么说明为何不影响结论。主文给论证，附录给评分明细、测算和来源。
+- 具备比较性或多维性的内容配展项图表：观点式标题、数据可回溯、方向性测算带注脚；图表与正文不重复表达，版式由导出器统一处理。
+- 事实、估算、建议、假设和未知分开；来源必须支持所引用的具体判断，unknown 不写成 0。
 
-- company, scope, or strategic objective changed → step 02;
-- facts, market data, or evidence changed → step 03;
-- judgment, customer choice, value proposition, or value capture changed → step 04;
-- presentation only → optional export, without reopening the core design.
+详细写作、人工评审量表、质量报告格式见 [内容报告契约](reference/content-report-contract.md)。
 
-Set `core_status=completed` only after step 05 is PASS, the three core deliverables PASS, and the user accepts the content.
+## 状态、兼容与可视化交接
 
-## Optional presentation exports
+新项目使用 `project_state.json` schema **1.3**；核心产物为 JSON、MD、DOCX、`content_quality_report.json`。质量未通过时用 `needs_revision` 或 `blocked`，可选导出使用 `optional_exports` 单独记录，失败不改变已通过的核心内容状态。
 
-Read `reference/presentation-export.md` only when the user asks for a polished report. A presentation tool may create HTML, DOCX, PDF, or PPTX from `business_design.md` and, when needed, `business_design.json`.
+旧项目不自动重置或覆盖。复用已核实的研究与设计，在新目录补写并评审 MD 正文后按新流程交付；迁移状态时保留旧文件，使用新 schema 1.3，重新核实步骤 05/06，不继承旧 HTML PASS 为正文质量 PASS。`scripts/migrate_project_state.py` 仍是旧版 1.2 迁移器，不用于新流程。
 
-Recommended workflow: give the generated Markdown to a capable document-design agent such as Claude Cowork, while instructing it not to strengthen, omit, or invent claims. A polished presentation is a communication layer, not a completeness proof. Keep the JSON and Markdown beside it.
+需要 PPT/HTML 时，读 [下游交接契约](reference/presentation-handoff.md)，把完整 MD、分析底稿、来源与交付约束交给可用的模板生产 skill。不要提前把正文压成幻灯片短句，也不要假定某个下游 skill 一定存在。
 
-## Recovery
+`render_business_design_bundle.py`、旧 JSON→MD/DOCX renderer、37 模块模板、HTML 几何审计、Report editor 和 Visual consultant 均为 **legacy / optional**，只服务旧项目显式兼容需求。新流程不加载 `reference/report-rendering-contract.md` 等旧视觉契约，不运行旧 bundle，不以其门禁判断核心完成。历史资产保留，后续拆分到展示 skill 时再迁移。
 
-Read `project_state.json` and resume from the first non-passed core step. Existing presentation files never prove that research, review, or core validation passed.
-
-## Non-negotiable rules
-
-- Preserve independent role review.
-- Never invent sources, financial data, evidence IDs, or precise scores.
-- Do not equate the most profitable value-chain segment with the best strategic entry point.
-- Do not equate growth, premiumization, cost reduction, or financing with a profit model.
-- JSON is the sole canonical content source; Markdown is generated.
-- Optional exporters may summarize only with explicit disclosure and must not overwrite the core files.
-- Do not include client data, source decks, or third-party training materials in redistributed copies of this skill.
-
-## References
-
-- `agents/analyst.md`
-- `agents/report-consultant.md`
-- `agents/vdbd-architect.md`
-- `reference/vdbd-method.md`
-- `reference/profit-models.md`
-- `reference/presentation-export.md`
-- `schemas/business_design.schema.json`
-- `schemas/market_insight.schema.json`
-- `schemas/insight_review.schema.json`
-- `schemas/project_state.schema.json`
-- `scripts/audit_research_report.py`
-- `scripts/validate_artifacts.py`
-- `scripts/render_business_design.py`
-- `scripts/audit_business_design_md.py`
+本地改动不等于 GitHub 发布；不自动选择许可证、推送或声称已发布。
