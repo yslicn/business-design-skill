@@ -1,3 +1,12 @@
+# v3.3 — 2026-09-13
+
+- Enforce 10,000–15,000 effective report body length and embedded analytical visuals with quantitative evidence.
+- Bind content and Word reviews to actual reviewed artifact revisions and verify export provenance.
+- Distinguish complete/partial chart bindings; reject invalid impact dependencies; support repeated images in DOCX.
+- Add arithmetic/evidence checks for quantified economics and validate delivered artifacts during completion checks.
+- Reuse research by input readiness, align evidence criteria, and document actual profit-pattern library coverage.
+- Preserve old reports; migration is required only when preparing a new final delivery.
+
 # Changelog
 
 ## 3.2 — 2026-09-10（Word 报告可视化与咨询版式）
@@ -40,7 +49,7 @@
 - Markdown 写入 JSON source SHA-256，并新增 `audit_business_design_md.py` 与 `content_quality_report.json`。
 - `project_state.schema.json` 增加 `core_status`、`core_artifacts`、`optional_exports`；新增 `migrate_project_state.py`，旧状态默认不覆盖。
 - `SKILL.md` 迁移为 7 步内容优先流程和 3 个 xor 门；PPT、Slide Design、Visual consultant 降为 optional extension/export。
-- 存量项目已备份旧 MD、重新生成 v2 MD，内容审计 PASS，project state 迁移为 `core_status=waiting_for_user`；历史 PPT 登记为 optional export failed。
+- 兴业 v3 已备份旧 MD、重新生成 v2 MD，内容审计 PASS，project state 迁移为 `core_status=waiting_for_user`；历史 PPT 登记为 optional export failed。
 
 ## 1.7 — 2026-08-08
 

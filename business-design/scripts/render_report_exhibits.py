@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+from design_reliability import resolve_data, object_sha
 import hashlib
 import json
 import math
@@ -54,16 +55,22 @@ def _load_font() -> None:
     })
 
 
-def _finish(fig, exhibit: dict, source: str, out: Path) -> None:
+def _finish(fig, exhibit: dict, source: str, out: Path, bottom: float = 0.075) -> None:
     """Apply house style chrome: action title, footnote, source line; save."""
     fig.suptitle(exhibit.get("action_title", exhibit["id"]),
                  x=0.02, y=0.975, ha="left", va="top", fontsize=15,
                  fontweight="bold", color=INK, wrap=True)
     # Reserve bottom strip for the footnote/source line so they never collide with axis labels.
-    fig.tight_layout(rect=(0, 0.075, 1, 0.92))
-    fig.text(0.99, 0.028, "资料来源：" + source, fontsize=8, color=GRAY, ha="right")
-    if exhibit.get("note"):
+    # 注释与来源行并存时错开两行高度，避免长注释横向延伸后与右对齐的来源行叠印。
+    has_note = bool(exhibit.get("note"))
+    if has_note:
+        bottom = max(bottom, 0.115)
+    fig.tight_layout(rect=(0, bottom, 1, 0.92))
+    if has_note:
+        fig.text(0.99, 0.052, "资料来源：" + source, fontsize=8, color=GRAY, ha="right")
         fig.text(0.02, 0.012, "注：" + exhibit["note"], fontsize=8, color=GRAY, ha="left")
+    else:
+        fig.text(0.99, 0.028, "资料来源：" + source, fontsize=8, color=GRAY, ha="right")
     fig.savefig(out, bbox_inches="tight", pad_inches=0.25)
     import matplotlib.pyplot as plt
     plt.close(fig)
@@ -117,9 +124,14 @@ def render_contribution_stack(exhibit: dict, business: dict, out: Path) -> str:
     labels = [r["segment"] for r in rows]
     market = [r.get("market_attractiveness_contribution", 0) for r in rows]
     fit = [r.get("enterprise_fit_contribution", 0) for r in rows]
-    fig, ax = _bar_axes((6.9, 0.8 + 0.55 * len(rows)))
-    ax.barh(labels, market, color=BLUE, height=0.6, label="市场吸引力（55%，满分 2.75）")
-    ax.barh(labels, fit, left=market, color=LIGHT, height=0.6, label="企业胜任权（45%，满分 2.25）")
+    fig, ax = _bar_axes((6.9, max(3.4, 1.8 + 0.55 * len(rows))))
+    method = business["chapters"]["customer_selection"].get("selection_method", {})
+    mw = method.get("market_attractiveness_weight", 0.55)
+    ew = method.get("enterprise_fit_weight", 0.45)
+    if not all(isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and 0 <= v <= 1 for v in (mw, ew)) or abs(mw + ew - 1) > 0.001:
+        raise ValueError("invalid selection weights")
+    ax.barh(labels, market, color=BLUE, height=0.6, label=f"市场吸引力（{mw:.0%}，满分 {5 * mw:g}）")
+    ax.barh(labels, fit, left=market, color=LIGHT, height=0.6, label=f"企业胜任权（{ew:.0%}，满分 {5 * ew:g}）")
     for i, row in enumerate(rows):
         total = market[i] + fit[i]
         ax.text(total + 0.06, i, f"{total:.2f}", va="center", fontsize=10,
@@ -128,8 +140,9 @@ def render_contribution_stack(exhibit: dict, business: dict, out: Path) -> str:
     ax.set_xlabel("加权贡献与总分", fontsize=9, color=GRAY)
     ax.xaxis.grid(True, color="#E8EEF4")
     ax.set_axisbelow(True)
-    ax.legend(loc="lower right", fontsize=8.5, frameon=False)
-    _finish(fig, exhibit, "底稿 business_design.json · segment_evaluation", out)
+    fig.legend(*ax.get_legend_handles_labels(), loc="center", bbox_to_anchor=(0.5, 0.14), fontsize=8.5,
+               frameon=False, ncol=2)
+    _finish(fig, exhibit, "底稿 business_design.json · segment_evaluation", out, bottom=0.29)
     return "business_design.json:chapters.customer_selection.segment_evaluation"
 
 
@@ -189,8 +202,11 @@ def render_matrix2x2(exhibit: dict, data: dict, out: Path) -> str:
         size = 320 + 520 * point.get("size", 0.6)
         ax.scatter(point["x"], point["y"], s=size, color=color, alpha=0.85,
                    edgecolor="white", linewidth=1.2, zorder=3)
+        # 支持逐点标签偏移（dx/dy，单位 pt），用于密集点位防叠印；dy 默认 16 在点上方居中
         ax.annotate(f"{point['label']}\n{point.get('tag', '')}", (point["x"], point["y"]),
-                    textcoords="offset points", xytext=(0, 16), ha="center",
+                    textcoords="offset points",
+                    xytext=(point.get("dx", 0), point.get("dy", 16)),
+                    ha=point.get("ha", "center"),
                     fontsize=9.5, color=INK, fontweight="bold")
     ax.axvline(2.5, color="#D3DCE6", linewidth=1)
     ax.axhline(2.5, color="#D3DCE6", linewidth=1)
@@ -352,18 +368,26 @@ def render_plan(plan_path: Path, out_dir: Path, business: dict | None,
                 raise ValueError(f"{exhibit['id']}: source_refs 不在证据台账: {dangling}")
         elif not market and refs:
             warnings.append(f"{exhibit['id']}: 未提供 market_insight.json，source_refs 未校验")
-        data = exhibit.get("data", {})
+        data = resolve_data(exhibit, business, market)
         if kind in AUTO_TYPES and business is None:
             raise ValueError(f"{exhibit['id']}: 自动类型需要 --business business_design.json")
         source = RENDERERS[kind](exhibit, business or {}, data, out_dir / f"{exhibit['id']}.png")
+        bound_fields = set(exhibit.get('data_bindings', {}))
+        unbound_fields = sorted(set(data) - bound_fields - {'evidence', 'highlight', 'tag_colors'})
+        verification = ('source_bound' if kind in AUTO_TYPES or (bound_fields and not unbound_fields)
+                        else 'partially_bound' if bound_fields else 'manual_review_required')
         rendered.append({"id": exhibit["id"], "type": kind, "png": f"{out_dir.name}/{exhibit['id']}.png",
                          "sha256": _sha256(out_dir / f"{exhibit['id']}.png"),
                          "action_title": exhibit["action_title"], "traced_source": source,
-                         "source_refs": refs})
+                         "source_refs": refs, "data_bindings": exhibit.get("data_bindings", {}),
+                         "data_verification": verification, "unbound_fields": unbound_fields,
+                         "evidence_refs_verified": bool(market and refs)})
     manifest = {
         "schema_version": "1.0",
-        "plan": str(plan_path), "exhibit_count": len(rendered),
-        "evidence_refs_verified": bool(market), "warnings": warnings, "exhibits": rendered,
+        "plan": str(plan_path), "plan_sha256": _sha256(plan_path),
+        "business_object_sha256": object_sha(business), "market_object_sha256": object_sha(market),
+        "exhibit_count": len(rendered),
+        "evidence_refs_verified": all(row["evidence_refs_verified"] for row in rendered), "warnings": warnings, "exhibits": rendered,
     }
     (out_dir / "exhibits_manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

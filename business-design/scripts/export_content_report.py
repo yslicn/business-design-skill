@@ -239,6 +239,10 @@ def polish_docx(path: Path, digest: str, meta: dict) -> Counter:
         header_properties = table.rows[0]._tr.get_or_add_trPr()
         if header_properties.find(qn("w:tblHeader")) is None:
             header_properties.append(OxmlElement("w:tblHeader"))
+        for row in table.rows:
+            row_properties = row._tr.get_or_add_trPr()
+            if row_properties.find(qn("w:cantSplit")) is None:
+                row_properties.append(OxmlElement("w:cantSplit"))
         weights = [max(6, min(45, max(len(row.cells[j].text) for row in table.rows)))
                    for j in range(len(table.columns))]
         for j, column in enumerate(table.columns):
@@ -284,6 +288,13 @@ def export(source: Path, output: Path, font: str, meta_extra: dict | None = None
     ast = json.loads(pandoc(str(source), "-f", reader, "-t", "json"))
     images: dict[str, Path] = {}
     check_supported(ast["blocks"], source.parent, images)
+    def image_occurrences(node):
+        if isinstance(node, dict):
+            return int(node.get('t') == 'Image') + sum(image_occurrences(v) for v in node.values())
+        if isinstance(node, list):
+            return sum(image_occurrences(v) for v in node)
+        return 0
+    expected_images = image_occurrences(ast['blocks'])
     expected = text_inventory(ast["blocks"])
     if not expected:
         raise ValueError("MD 没有可见正文")
@@ -306,8 +317,8 @@ def export(source: Path, output: Path, font: str, meta_extra: dict | None = None
         decorations = polish_docx(docx, sha256(md), meta)
         from docx import Document
         embedded = len(Document(docx).inline_shapes)
-        if embedded != len(images):
-            raise ValueError(f"展项嵌入校验失败：MD 引用 {len(images)} 张，DOCX 实际嵌入 {embedded} 张；未发布")
+        if embedded != expected_images:
+            raise ValueError(f"展项嵌入校验失败：MD 引用 {expected_images} 次，DOCX 实际嵌入 {embedded} 张；未发布")
         actual_ast = json.loads(pandoc(str(docx), "-f", "docx", "-t", "json"))
         actual = text_inventory(actual_ast["blocks"])
         decorated = expected + decorations
@@ -315,7 +326,7 @@ def export(source: Path, output: Path, font: str, meta_extra: dict | None = None
         if missing or extra:
             raise ValueError(f"MD→DOCX 文本清单不一致，缺少 {sum(missing.values())} 字符，新增 {sum(extra.values())} 字符；未发布")
         manifest = {
-            "schema_version": "3.1", "conversion_status": "PASS",
+            "schema_version": "3.2", "image_occurrences": expected_images, "conversion_status": "PASS",
             "text_inventory": "PASS", "content_review": "PENDING",
             "docx_readability": "PENDING", "font": font,
             "cover": {k: meta.get(k, "") for k in ("title", "subtitle", "company", "date", "confidential")},

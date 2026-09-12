@@ -1,5 +1,11 @@
 # Business Design Skill
 
+Current release: **v3.3**.
+
+Final reports must contain **10,000–15,000 effective body characters/words**, analytical visuals, and evidence-linked quantitative content. Chinese characters count individually; Latin/alphanumeric words count as tokens. Headings, references, appendices, captions and exact repeated body blocks are excluded. These are delivery gates, not a guarantee of reasoning quality.
+
+Version 3.3 also includes reviewer-authored revision receipts, MD/DOCX export provenance, partial chart-binding disclosure, validated update dependencies, and arithmetic checks for quantified economics. See `business-design/reference/reliability-and-handoff.md` and `business-design/reference/economics-ledger.md`.
+
 An evidence-led, multi-agent business-design workflow that simulates a small strategy-consulting team while remaining usable with lower-cost language models.
 
 The skill's core value is the business viewpoint and supporting content, not a specific slide or document renderer. Since v3 the default deliverables are a consultant-written long-form report with embedded consulting-style exhibits:

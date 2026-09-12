@@ -1252,6 +1252,22 @@ def main() -> int:
         errors.extend(validate_coverage(coverage, business, slides, fidelity_report))
     if state is not None:
         errors.extend(validate_state(state))
+        if state.get("schema_version") == "1.3" and state.get("core_status") in {"waiting_for_user", "completed"}:
+            from design_reliability import delivery
+            try:
+                project = args.state.parent
+                # Validate the artifacts actually being delivered, even for --state alone.
+                quality = load_json(project / 'content_quality_report.json')
+                paths = quality.get('artifact_paths', {})
+                actual_market = load_json(project / paths.get('market_insight.json', 'market_insight.json'))
+                actual_business = load_json(project / paths.get('business_design.json', 'business_design.json'))
+                actual_review = load_json(project / 'insight_review.json')
+                errors.extend(validate_market(actual_market))
+                errors.extend(validate_business(actual_business, actual_market))
+                errors.extend(validate_insight_review(actual_review))
+                errors.extend(delivery(project, state))
+            except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError) as exc:
+                errors.append(f"交付文件检查失败: {exc}")
 
     if args.fidelity_report:
         fidelity_report["status"] = "FAIL" if errors else "PASS"
